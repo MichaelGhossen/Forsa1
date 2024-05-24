@@ -6,12 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\JobsForFreelancers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 class JobsForFreelancersController extends Controller
 {
     public function index()
     {
         $jobs = JobsForFreelancers::all();
-        return response()->json($jobs);
+        $arr[]=null;
+        $i=0;
+        foreach($jobs as $jobs)
+     {  $arr[$i++]=$jobs;
+    }
+        return response()->json(['message'=>$arr],200);
     }
 
     public function show($id)
@@ -106,4 +112,32 @@ class JobsForFreelancersController extends Controller
         return response()->json(['message' => 'Job deleted successfully']);
     }
 
+
+    public function searchJobFreelancer(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'title' => 'required',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Search field is required',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $jobs = JobsForFreelancers::where('title', 'like', '%' . $request->title . '%')->get();
+
+    if ($jobs->isNotEmpty()) {
+        return response()->json([
+            'data' => $jobs,
+            'message' => 'Found jobs',
+        ], 200);
+    } else {
+        return response()->json([
+            'data' => [],
+            'message' => 'No freelancer jobs matched your search',
+        ], 404);
+    }
+}
 }

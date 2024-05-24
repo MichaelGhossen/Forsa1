@@ -26,6 +26,8 @@ return new class extends Migration
             $table->decimal('min_salary', 10, 2)->nullable();
             $table->decimal('max_salary', 10, 2)->nullable();
             $table->string('location')->nullable();
+            $table->unsignedBigInteger('company_id')->nullable();
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('set null');
             $table->timestamps();
         });
     }

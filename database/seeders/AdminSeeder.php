@@ -20,7 +20,7 @@ class AdminSeeder extends Seeder
             'email' => 'michaelghossen@gmail.com',
             'password' => Hash::make('12345678'),
             'image'=>'null',
-            'cv'=>'NULL',
+            //'cv'=>'NULL',
             'user_type' => 'admin'
         ]);
     }

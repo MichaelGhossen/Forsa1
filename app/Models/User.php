@@ -22,7 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'image',
-        'cv',
+        //'cv',
         'user_type'
 
     ];
@@ -45,10 +45,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    public function freelancer()
-    {
-        return $this->hasOne(Freelancer::class);
-    }
+    // public function freelancer()
+    // {
+    //     return $this->hasOne(Freelancer::class);
+    // }
     public function jobSeeker()
     {
         return $this->hasOne(JobSeeker::class);
@@ -57,10 +57,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(JobOwner::class);
     }
-    public function company()
-    {
-        return $this->hasOne(Companies::class);
-    }
+    // public function company()
+    // {
+    //     return $this->hasOne(Companies::class);
+    // }
     public function jobApplications()
     {
         return $this->hasMany(JobApplication::class);
@@ -72,5 +72,9 @@ class User extends Authenticatable
     public function jobsForFreelancers()
     {
         return $this->belongsToMany(JobsForFreelancers::class, 'jobs_for_freelancers_users', 'user_id', 'jobs_for_freelancer_id');
+    }
+    public function cv()
+    {
+        return $this->hasOne(CV::class);
     }
 }

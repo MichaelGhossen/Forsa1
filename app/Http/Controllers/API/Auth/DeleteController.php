@@ -55,18 +55,18 @@ class DeleteController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deleteFreelancer(Request $request)
-    {
-        $user = User::where('id', $request->input('id'))->where('user_type', 'freelancer')->first();
+    // public function deleteFreelancer(Request $request)
+    // {
+    //     $user = User::where('id', $request->input('id'))->where('user_type', 'freelancer')->first();
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
+    //     if (!$user) {
+    //         return response()->json(['message' => 'User not found'], 404);
+    //     }
 
-        $user->delete();
+    //     $user->delete();
 
-        return response()->json(['message' => 'Freelancer user deleted successfully']);
-    }
+    //     return response()->json(['message' => 'Freelancer user deleted successfully']);
+    // }
 
     /**
      * Delete a company user

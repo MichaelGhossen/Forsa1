@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,7 +23,7 @@ class Job extends Model
             'description',
             'category_id',
             'location',
-
+             'company_id',
         ];
 
         protected $casts = [
@@ -42,4 +43,13 @@ class Job extends Model
         {
             return $this->belongsToMany(User::class, 'job_applications', 'job_id', 'user_id');
         }
-}
+        public function company(): BelongsTo
+        {
+            return $this->belongsTo(Companies::class);
+        }
+
+        public function companies(): BelongsToMany
+        {
+            return $this->belongsToMany(JobsCompanies::class, '_jobs_companies');
+        }
+    }

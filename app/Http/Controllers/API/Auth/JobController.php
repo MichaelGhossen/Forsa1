@@ -5,14 +5,21 @@ namespace App\Http\Controllers\API\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Job;
 use Illuminate\Http\Request;
-use App\Models\User;
+// use App\Models\User;
+// use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 class JobController extends Controller
 {
     public function index()
     {
         $jobs = Job::all();
-        return response()->json($jobs);
+        $arr[]=null;
+        $i=0;
+        foreach($jobs as $jobs)
+     {  $arr[$i++]=$jobs;
+    }
+        return response()->json(['message'=>$arr],200);
     }
 
     public function show($id)
@@ -44,7 +51,7 @@ class JobController extends Controller
     'description' => 'required|string',
     'category_id' => 'required|exists:categories,id',
     'location' => 'nullable|string',
-
+    'company_id'=>'required',
     ]);
 
     $job = Job::create($validatedData);
@@ -83,6 +90,7 @@ class JobController extends Controller
     'description' => 'required|string',
     'category_id' => 'required|exists:categories,id',
     'location' => 'nullable|string',
+    'company_id'=>'required',
 
             ]);
 
@@ -109,4 +117,31 @@ class JobController extends Controller
         return response()->json(['message' => 'Job deleted successfully']);
     }
 
+    public function searchJob(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Search field is required',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $jobs = Job::where('title', 'like', '%' . $request->title . '%')->get();
+
+        if ($jobs->isNotEmpty()) {
+            return response()->json([
+                'data' => $jobs,
+                'message' => 'Found jobs',
+            ], 200);
+        } else {
+            return response()->json([
+                'data' => [],
+                'message' => 'No jobs matched your search',
+            ], 404);
+        }
+    }
 }

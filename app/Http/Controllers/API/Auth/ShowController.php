@@ -9,30 +9,30 @@ use Illuminate\Support\Facades\Auth;
 
 class ShowController extends Controller
 {
-    public function showFreelancer(Request $request)
-    {
-        $user = $request->user();
+    // public function showFreelancer(Request $request)
+    // {
+    //     $user = $request->user();
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
+    //     if (!$user) {
+    //         return response()->json(['message' => 'User not found'], 404);
+    //     }
 
-        // Check if the user has a 'freelancer' relationship
-        $freelancer = $user->freelancer;
+    //     // Check if the user has a 'freelancer' relationship
+    //     $freelancer = $user->freelancer;
 
-        if (!$freelancer) {
-            return response()->json(['message' => 'Freelancer not found'], 404);
-        }
+    //     if (!$freelancer) {
+    //         return response()->json(['message' => 'Freelancer not found'], 404);
+    //     }
 
-        return response()->json([
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'email' => $user->email,
-            'image' => $user->image,
-            'cv' => $user->cv,
-            'user_type' => $user->user_type,
-        ]);
-    }
+    //     return response()->json([
+    //         'first_name' => $user->first_name,
+    //         'last_name' => $user->last_name,
+    //         'email' => $user->email,
+    //         'image' => $user->image,
+    //         'cv' => $user->cv,
+    //         'user_type' => $user->user_type,
+    //     ]);
+    // }
     public function showJobSeeker(Request $request)
     {
         $user = $request->user();
@@ -46,7 +46,7 @@ class ShowController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'image' => $user->image,
-            'cv' => $user->cv,
+            // 'cv' => $user->cv,
             'user_type' => $user->user_type,
         ]);
     }
@@ -64,7 +64,7 @@ class ShowController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'image' => $user->image,
-            'cv' => $user->cv,
+            // 'cv' => $user->cv,
             'user_type' => $user->user_type,
         ]);
     }
@@ -82,7 +82,7 @@ class ShowController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'image' => $user->image,
-            'cv' => $user->cv,
+            // 'cv' => $user->cv,
             'user_type' => $user->user_type,
         ]);
     }
@@ -99,7 +99,7 @@ class ShowController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'image' => $user->image,
-            'cv' => $user->cv,
+            // 'cv' => $user->cv,
             'user_type' => $user->user_type,
         ]);
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Job;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +19,14 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::all();
-        return response()->json($categories);
+        $arr[]=null;
+        $i=0;
+        foreach($categories as $categories)
+     {  $arr[$i++]=$categories;
     }
+        return response()->json(['message'=>$arr],200);
+    }
+
 
     /**
      * Display the specified category.
@@ -45,7 +52,7 @@ class CategoryController extends Controller
             ]);
 
             $category = Category::create($validatedData);
-            
+
             return response()->json($category, 201);
         } else {
             return response()->json(['error' => 'You are not authorized to create a category.'], 403);
@@ -87,5 +94,30 @@ class CategoryController extends Controller
             return response()->json(['error' => 'You are not authorized to delete a category.'], 403);
         }
     }
+    public function searchCategory( Request $request){
+
+        $validator = Validator::make($request->all(),[
+            'name'=>'required',
+        ]);
+        if(  $validator->fails()){
+            return response()->json([
+                'message'=>'Search Field required',
+                'error'=> $validator->errors()
+            ]);
+        }
+        $category=Category::where("name","like","%$request->name%")->first();
+        if( $category){
+            return response()->json([
+                'data'=> $category->name,
+            'message'=>'Found it',
+            ],200);
+        }
+        else{
+            return response()->json([
+                'data'=>Null,
+                'message'=>'No categories matched your search',
+            ],404);
+        }
+        }
 }
 
