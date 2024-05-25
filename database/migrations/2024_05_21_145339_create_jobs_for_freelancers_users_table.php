@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jobs_for_freelancers_users', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('jobs_for_freelancer_id');
-            $table->unsignedBigInteger('user_id');
-            $table->timestamps();
-            $table->foreign('jobs_for_freelancer_id')->references('id')->on('j_obs_for_freelancers')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
+        // Schema::create('jobs_for_freelancers_users', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->unsignedBigInteger('jobs_for_freelancer_id');
+        //     $table->unsignedBigInteger('user_id');
+        //     $table->timestamps();
+        //     $table->foreign('jobs_for_freelancer_id')->references('id')->on('j_obs_for_freelancers')->onDelete('cascade');
+        //     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        // });
     }
 
     /**
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('jobs_for_freelancers_users');
+        // Schema::dropIfExists('jobs_for_freelancers_users');
     }
 };

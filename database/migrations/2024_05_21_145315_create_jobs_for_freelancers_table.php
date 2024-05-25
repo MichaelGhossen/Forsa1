@@ -16,17 +16,11 @@ return new class extends Migration
             $table->string('title');
             $table->date('min_duration');
             $table->date('max_duration');
-            // $table->integer('min_age');
-            // $table->integer('max_age');
-            // $table->string('gender')->nullable();
             $table->text('languages');
             $table->text('description');
             $table->text('requirements');
-          //  $table->unsignedBigInteger('category_id')->nullable();
-           // $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
             $table->decimal('min_salary', 10, 2)->nullable();
             $table->decimal('max_salary', 10, 2)->nullable();
-            // $table->string('location')->nullable();
             $table->timestamps();
         });
     }

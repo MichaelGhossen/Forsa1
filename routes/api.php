@@ -3,6 +3,8 @@
 use App\Http\Controllers\API\Auth\CategoryController;
 use App\Http\Controllers\API\Auth\CvController;
 use App\Http\Controllers\API\Auth\DeleteController;
+use App\Http\Controllers\API\Auth\FavoriteController;
+use App\Http\Controllers\API\Auth\FavoriteFreelanceController;
 use App\Http\Controllers\API\Auth\JobController;
 use App\Http\Controllers\API\Auth\JobsForFreelancersController;
 use App\Http\Controllers\API\Auth\LoginController;
@@ -132,3 +134,10 @@ Route::get('/cvs/company/{companyId}', [CvController::class, 'getCvsByCompanyId'
 
 
 Route::post('/update/company/{id}', [UpdateController::class, 'updateCompany']);
+
+Route::middleware('auth:sanctum')->group(function () {
+Route::post('/favorites/add', [FavoriteController::class, 'store']);
+Route::post('/favorites/delete', [FavoriteController::class, 'destroy']);
+Route::post('/favorites/freelance/add', [FavoriteFreelanceController::class, 'store']);
+Route::post('/favorites/freelance/delete', [FavoriteFreelanceController::class, 'destroy']);
+});

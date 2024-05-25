@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_user', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('job_id');
-            $table->unsignedBigInteger('user_id');
-            $table->timestamps();
+        // Schema::create('job_user', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->unsignedBigInteger('job_id');
+        //     $table->unsignedBigInteger('user_id');
+        //     $table->timestamps();
 
-            $table->foreign('job_id')->references('id')->on('jobs')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
+        //     $table->foreign('job_id')->references('id')->on('jobs')->onDelete('cascade');
+        //     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        // });
     }
 
     /**
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_application');
+        // Schema::dropIfExists('job_application');
     }
 };

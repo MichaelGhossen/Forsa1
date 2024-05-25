@@ -35,14 +35,8 @@ class Job extends Model
             return $this->belongsTo(Category::class);
         }
 
-        public function jobApplications()
-        {
-            return $this->hasMany(JobApplication::class);
-        }
-        public function users()
-        {
-            return $this->belongsToMany(User::class, 'job_applications', 'job_id', 'user_id');
-        }
+
+
         public function company(): BelongsTo
         {
             return $this->belongsTo(Companies::class);
@@ -52,4 +46,13 @@ class Job extends Model
         {
             return $this->belongsToMany(JobsCompanies::class, '_jobs_companies');
         }
+        public function user()
+{
+    return $this->belongsTo(User::class);
+}
+public function favorites()
+{
+    return $this->belongsToMany(User::class, 'favorites'); // Indicates a many-to-many relationship with User
+}
+
     }

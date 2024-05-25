@@ -61,20 +61,34 @@ class User extends Authenticatable
     // {
     //     return $this->hasOne(Companies::class);
     // }
-    public function jobApplications()
-    {
-        return $this->hasMany(JobApplication::class);
-    }
-    public function jobs()
-    {
-        return $this->belongsToMany(Job::class, 'job_applications', 'user_id', 'job_id');
-    }
-    public function jobsForFreelancers()
-    {
-        return $this->belongsToMany(JobsForFreelancers::class, 'jobs_for_freelancers_users', 'user_id', 'jobs_for_freelancer_id');
-    }
+    // public function jobApplications()
+    // {
+    //     return $this->hasMany(JobApplication::class);
+    // }
+    // public function jobs()
+    // {
+    //     return $this->belongsToMany(Job::class, 'job_applications', 'user_id', 'job_id');
+     // }
+    // public function jobsForFreelancers()
+    // {
+    //     return $this->belongsToMany(JobsForFreelancers::class, 'jobs_for_freelancers_users', 'user_id', 'jobs_for_freelancer_id');
+    // }
     public function cv()
     {
         return $this->hasOne(CV::class);
     }
+    public function jobs()
+{
+    return $this->hasMany(Job::class);
+}
+// User.php
+public function favorites()
+{
+    return $this->belongsToMany(Job::class, 'favorites', 'user_id', 'job_id');
+}
+public function freelance_favorites()
+{
+    return $this->belongsToMany(JObsForFreelancers::class, 'freelance_favorites', 'user_id', 'j_obs_for_freelancers_id');
+}
+
 }
