@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class FreelanceFavorite extends Model
 {
     use HasFactory;
+    protected $fillable = ['j_obs_for_freelancers_id', 'user_id'];
+
 
     public function user()
     {
@@ -16,7 +18,7 @@ class FreelanceFavorite extends Model
 
     public function j_obs_for_freelancers()
     {
-        return $this->belongsTo(JObsForFreelancers::class);
+        return $this->hasOne(JObsForFreelancers::class);
     }
 
 }

@@ -18,11 +18,6 @@ class Companies extends Model
         'user_type',
 
     ];
- //   protected $fillable = ['user_id'];
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
     protected $hidden = [
         'password',
     ];
@@ -43,5 +38,13 @@ class Companies extends Model
     public function jobs(): BelongsToMany
     {
         return $this->belongsToMany(Job::class, '_jobs_companies');
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+    public function account()
+    {
+        return $this->hasOne(Account::class);
     }
 }

@@ -34,16 +34,6 @@ class LogoutController extends Controller
 
         return response(['data' => 'User logged out successfully.'], 200);
     }
-
-    // public function logoutFreelancer(): Response
-    // {
-    //     $user = Auth::user();
-
-    //     $user->tokens()->delete();
-
-    //     return response(['data' => 'User logged out successfully.'], 200);
-    // }
-
     public function logoutCompany(): Response
     {
         $user = Auth::user();

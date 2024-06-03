@@ -90,31 +90,6 @@ class LoginController extends Controller
 
         return response(['message' => 'Invalid credentials'], 401);
     }
-    // public function loginFreelancer(Request $request): Response
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'email' => 'required|email',
-    //         'password' => 'required',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response(['message' => $validator->errors()], 401);
-    //     }
-
-    //     $credentials = $request->only('email', 'password');
-
-    //     if (Auth::attempt($credentials)) {
-    //         $user = Auth::user();
-    //         if ($user->user_type !== 'freelancer') {
-    //             return response(['message' => 'Unauthorized'], 401);
-    //         }
-
-    //         $success = $user->createToken('MyApp')->plainTextToken;
-    //         return response(['token' => $success], 200);
-    //     }
-
-    //     return response(['message' => 'Invalid credentials'], 401);
-    // }
     public function loginCompany(Request $request): JsonResponse
 {
     $validatedData = $request->validate([

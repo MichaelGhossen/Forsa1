@@ -47,27 +47,6 @@ class DeleteController extends Controller
 
         return response()->json(['message' => 'Job_owner user deleted successfully']);
     }
-
-    /**
-     * Delete a freelancer user
-     *
-     * @param Request $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    // public function deleteFreelancer(Request $request)
-    // {
-    //     $user = User::where('id', $request->input('id'))->where('user_type', 'freelancer')->first();
-
-    //     if (!$user) {
-    //         return response()->json(['message' => 'User not found'], 404);
-    //     }
-
-    //     $user->delete();
-
-    //     return response()->json(['message' => 'Freelancer user deleted successfully']);
-    // }
-
     /**
      * Delete a company user
      *

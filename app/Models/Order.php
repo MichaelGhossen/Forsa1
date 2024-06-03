@@ -5,25 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CV extends Model
+class Order extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'user_id',
+        'job_id',
+        'cv_id',
         'company_id',
-        'file_path',
+        'order_status',
     ];
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function companies()
+    public function job()
     {
-        return $this->belongsToMany(Companies::class, 'cv_company');
+        return $this->belongsTo(Job::class);
     }
-    public function orders()
+    public function company()
     {
-        return $this->hasMany(Order::class);
+        return $this->belongsTo(Companies::class);
+    }
+    public function cv()
+    {
+        return $this->belongsTo(Cv::class);
     }
 }

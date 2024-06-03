@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Job;
+use App\Models\JObsForFreelancers;
 use Illuminate\Support\Facades\Auth;
 class CategoryController extends Controller
 {
@@ -119,5 +120,23 @@ class CategoryController extends Controller
             ],404);
         }
         }
+//         public function getAllJobsByCategory_id($category_id)
+// {
+//     $jobs = Job::where('category_id', $category_id)->get();
+
+//     return response()->json($jobs);
+// }
+public function getAllJobsByCategory_id($category_id)
+{
+    $jobs = Job::where('category_id', $category_id)->get();
+    $jobsForFreelancers = JObsForFreelancers::where('category_id', $category_id)->get();
+
+    $response = [
+        'jobs' => $jobs,
+        'jobs_for_freelancers' => $jobsForFreelancers
+    ];
+
+    return response()->json($response);
+}
 }
 

@@ -16,7 +16,8 @@ class JObsForFreelancers extends Model
         'max_salary',
         'languages',
         'description',
-        'requirements'
+        'requirements',
+        'category_id',
 
     ];
 
@@ -25,13 +26,15 @@ class JObsForFreelancers extends Model
     {
         return $this->belongsTo(User::class);
     }
-    // public function j_obs_for_freelancers()
-    // {
-    //     return $this->belongsToMany(User::class, 'freelance_favorites');
-    // }
+
     public function FreelanceFavorite()
 {
-    return $this->belongsToMany(User::class, 'FreelanceFavorite'); // Indicates a many-to-many relationship with User
+    return $this->hasMany(FreelanceFavorite::class);
+}
+
+public function category()
+{
+    return $this->belongsTo(Category::class);
 }
 
 }

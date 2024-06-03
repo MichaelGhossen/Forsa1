@@ -15,4 +15,9 @@ class JobOwner extends Model
         return $this->belongsTo(User::class);
     }
 
+    // public function account()
+    // {
+    //     return $this->hasOne(Account::class);
+    // }
+
         }

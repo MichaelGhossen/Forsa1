@@ -17,4 +17,8 @@ class Category extends Model
     {
         return $this->hasMany(Job::class);
     }
+    public function jobsForFreelance()
+    {
+        return $this->hasMany(JObsForFreelancers::class);
+    }
 }

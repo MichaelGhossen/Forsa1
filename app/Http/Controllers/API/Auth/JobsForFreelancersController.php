@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Account;
 use App\Models\JobsForFreelancers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,40 +26,6 @@ class JobsForFreelancersController extends Controller
         $job = JobsForFreelancers::findOrFail($id);
         return response()->json($job);
     }
-    public function create(Request $request)
-    {
-        $user = Auth::user();
-
-        // Check if the user is a job owner
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
-        }
-
-        if ($user->user_type === 'job_owner') {
-        $validatedData = $request->validate([
-        'title' => 'required|string|max:255',
-        'min_duration' => 'required|date',
-        'max_duration' => 'required|date',
-        'requirements' => 'required|string',
-        // 'min_age' => 'required|integer',
-        // 'max_age' => 'required|integer',
-        'min_salary' => 'nullable|numeric',
-        'max_salary' => 'nullable|numeric',
-        // 'gender' => 'nullable',
-        'languages' => 'required',
-        'description' => 'required|string',
-        // 'location' => 'nullable|string',
-
-        ]);
-
-        $job = JobsForFreelancers::create($validatedData);
-
-        return response()->json($job, 201);
-        }
-        else{
-            return "user not auth";
-        }
-    }
     public function update(Request $request, $id)
     {
         $user = Auth::user();
@@ -78,15 +45,11 @@ class JobsForFreelancersController extends Controller
     'min_duration' => 'required|date',
     'max_duration' => 'required|date',
     'requirements' => 'required|string',
-    // 'min_age' => 'required|integer',
-    // 'max_age' => 'required|integer',
     'min_salary' => 'nullable|numeric',
     'max_salary' => 'nullable|numeric',
-    // 'gender' => 'nullable',
     'languages' => 'required',
     'description' => 'required|string',
-    // 'location' => 'nullable|string',
-
+    'category_id' => 'required|exists:categories,id',
             ]);
 
             $job ->update($validatedData);
@@ -138,6 +101,55 @@ class JobsForFreelancersController extends Controller
             'data' => [],
             'message' => 'No freelancer jobs matched your search',
         ], 404);
+    }
+}
+
+public function create(Request $request)
+{
+    $user = Auth::user();
+
+    // Check if the user is a job owner
+    if (!$user) {
+        return response()->json(['error' => 'Unauthenticated.'], 401);
+    }
+
+    if ($user->user_type === 'job_owner') {
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'min_duration' => 'required|date',
+            'max_duration' => 'required|date',
+            'requirements' => 'required|string',
+            'min_salary' => 'nullable|numeric',
+            'max_salary' => 'nullable|numeric',
+            'languages' => 'required',
+            'description' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+
+        ]);
+
+        // Get the job owner's account
+        $jobOwnerAccount = Account::where('user_id', $user->id)->first();
+
+        // Calculate the amount to deduct from the job owner's account
+        $amountToDeduct = 50; // For example, deduct $50 for creating a job
+
+        // Check if the job owner has enough balance
+        if ($jobOwnerAccount->amount >= $amountToDeduct) {
+            // Update the job owner's account
+            $jobOwnerAccount->amount -= $amountToDeduct;
+            $jobOwnerAccount->save();
+
+            $job = JobsForFreelancers::create($validatedData);
+
+            return response()->json([
+                'job' => $job,
+                'remaining_job_owner_account_balance' => $jobOwnerAccount->amount
+            ], 201);
+        } else {
+            return response()->json(['error' => 'Insufficient balance.'], 400);
+        }
+    } else {
+        return "user not auth";
     }
 }
 }

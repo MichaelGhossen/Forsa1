@@ -21,6 +21,8 @@ return new class extends Migration
             $table->text('requirements');
             $table->decimal('min_salary', 10, 2)->nullable();
             $table->decimal('max_salary', 10, 2)->nullable();
+            $table->unsignedBigInteger('category_id')->nullable();
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
             $table->timestamps();
         });
     }

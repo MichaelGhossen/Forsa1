@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-//use Illuminate\Validation\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
@@ -34,7 +33,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'is_jop_seeker'=>1,
-            
+
         ]);
 
         $success = $user->createToken('MyApp')->plainTextToken;

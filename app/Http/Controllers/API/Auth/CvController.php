@@ -18,10 +18,7 @@ class CvController extends Controller
     if ($user && $user->user_type === 'admin') {
         return response()->json(['message' => 'You are not authorized to access this resource'], 403);
     }
-
-    // Fetch all CVs
     $cvs = CV::all();
-
     return response()->json($cvs, 200);
 }
 
@@ -39,9 +36,7 @@ class CvController extends Controller
             'company_id' => 'required|integer',
             'cv' => 'required|file',
         ]);
-
         $file_path = $request->file('cv')->store('cvs');
-
         $cv = CV::create([
             'user_id' => $request->user_id,
             'company_id' => $request->company_id,
@@ -50,7 +45,6 @@ class CvController extends Controller
 
         return response()->json($cv, 201);
     }
-
     /**
      * Display the specified CV.
      *
@@ -62,7 +56,6 @@ class CvController extends Controller
         $cv = CV::findOrFail($id);
         return response()->json($cv);
     }
-
     /**
      * Update the specified CV in storage.
      *
@@ -73,8 +66,6 @@ class CvController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-           // 'user_id' => 'required|integer',
-            //'company_id' => 'required|integer',
             'cv' => 'required|file',
         ]);
 
@@ -82,14 +73,10 @@ class CvController extends Controller
 
         $cv = CV::findOrFail($id);
         $cv->update([
-            //'user_id' => $request->user_id,
-            //'company_id' => $request->company_id,
-            'file_path' => $file_path,
+        'file_path' => $file_path,
         ]);
-
         return response()->json($cv);
     }
-
     /**
      * Remove the specified CV from storage.
      *
