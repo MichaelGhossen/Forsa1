@@ -18,7 +18,6 @@ return new class extends Migration
             $table->date('max_duration');
             $table->text('languages');
             $table->text('description');
-            $table->text('requirements');
             $table->decimal('min_salary', 10, 2)->nullable();
             $table->decimal('max_salary', 10, 2)->nullable();
             $table->unsignedBigInteger('category_id')->nullable();

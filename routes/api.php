@@ -11,12 +11,14 @@ use App\Http\Controllers\API\Auth\JobsForFreelancersController;
 use App\Http\Controllers\API\Auth\LoginController;
     use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\OrderController;
+use App\Http\Controllers\API\Auth\OrderForFreelanceController;
 use App\Http\Controllers\API\Auth\ShowController;
 use App\Http\Controllers\API\Auth\SkillController;
 use App\Http\Controllers\API\Auth\UpdateController;
 use App\Http\Controllers\API\RegisterController;
     use App\Http\Controllers\API\UserController;
-    use Illuminate\Http\Request;
+use App\Models\OrderForFreelance;
+use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Route;
 
     /*
@@ -54,6 +56,8 @@ use App\Http\Controllers\API\RegisterController;
         Route::post('job_owner', [LoginController::class, 'loginJobOwner']);
         Route::post('company', [LoginController::class, 'loginCompany']);
     });
+    Route::middleware('auth:sanctum')->post('/users/choose-skills', [UserController::class, 'chooseSkills']);
+    Route::middleware('auth:sanctum')->get('/user/skills/{id}', [SkillController::class, 'getUserSkills']);
 
     Route::middleware('auth:sanctum')->get('show/admin', [ShowController::class, 'showAdmin']);
     Route::middleware('auth:sanctum')->get('show/job_seeker', [ShowController::class, 'showJObSeeker']);
@@ -84,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/job/create', [JobController::class,'create']);
     Route::post('/job/update/{id}', [JobController::class,'update']);
     Route::post('/job/delete/{id}', [JobController::class,'destroy']);
+    Route::get('/jobs/company/{id}', [JobController::class,'jobsByCompany']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -100,6 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/job/freelancers/create', [JobsForFreelancersController::class,'create']);
     Route::post('/job/freelancers/update/{id}', [JobsForFreelancersController::class,'update']);
     Route::post('/job/freelancers/delete/{id}', [JobsForFreelancersController::class,'destroy']);
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -150,3 +156,12 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 Route::get('/jobs/category/{category_id}', [CategoryController::class,'getAllJobsByCategory_id']);
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/freelance/orders', [OrderForFreelanceController::class,'index']);
+    Route::post('/freelance/apply', [OrderForFreelanceController::class, 'createOrder']);
+    Route::post('/freelance/order/update/{id}', [OrderForFreelanceController::class,'update']);
+    Route::post('/freelance/order/delete/{id}', [OrderForFreelanceController::class,'destroy']);
+    Route::get('/freelance/order/job_owner/{id}', [OrderForFreelanceController::class,'getOrdersByJobOwnerId']);
+    Route::get('/freelance/order/show/{id}', [OrderForFreelanceController::class,'show']);
+    Route::get('/freelance/order/user_id/{id}', [OrderForFreelanceController::class,'getAllOrdersForUser']);
+});

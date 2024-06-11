@@ -73,13 +73,16 @@ class JobController extends Controller
         $job = Job::findOrFail($id);
 
         // Check if the user is the owner of the job or an admin
-        if ($user->user_type !== 'admin') {
-            return response()->json(['error' => 'You are not authorized to delete this job.'], 403);
-        }
+        if ($user->user_type === 'company'||$user->user_type === 'admin') {
 
         $job->delete();
         return response()->json(['message' => 'Job deleted successfully']);
     }
+    else{
+        return response()->json(['error' => 'You are not authorized to delete this job.'], 403);
+
+    }
+}
 
     public function searchJob(Request $request)
     {
@@ -134,38 +137,54 @@ public function create(Request $request)
             'location' => 'nullable|string',
             'company_id' => 'nullable',
         ]);
+
         if ($user->user_type !== 'admin') {
+            // Get the company account
+            $companyAccount = Account::where('company_id', $validatedData['company_id'])->first();
 
-        // Get the company account
-        $companyAccount = Account::where('company_id', $validatedData['company_id'])->first();
+            // Calculate the amount to deduct from the company account
+            $amountToDeduct = 15; // Fixed amount of 15
+            $remainingAmount = $companyAccount->amount - $amountToDeduct;
 
-        // Calculate the amount to deduct from the company account
-        $amountToDeduct = $companyAccount->amount * 0.1; // 10% deduction
-        $remainingAmount = $companyAccount->amount - $amountToDeduct;
+            if ($companyAccount->amount >= $amountToDeduct) {
+                // Update the company account
+                $companyAccount->amount -= $amountToDeduct;
+                $companyAccount->save();
 
-        // Update the company account
-        $companyAccount->amount -= $amountToDeduct;
-        $companyAccount->save();
+                // Get the admin account
+                $adminAccount = Account::where('user_id', 1)->first(); // Assuming the admin user has ID 1
 
-        // Get the admin account
-        $adminAccount = Account::where('user_id', 1)->first(); // Assuming the admin user has ID 1
+                // Add the deducted amount to the admin account
+                $adminAccount->amount += $amountToDeduct;
+                $adminAccount->save();
 
-        // Add the deducted amount to the admin account
-        $adminAccount->amount += $amountToDeduct;
-        $adminAccount->save();
-        $job = Job::create($validatedData);
-        return response()->json([
-            'job' => $job,
-            'remaining_company_account_balance' => $remainingAmount
-        ], 201);}
-        else {
-        $job = Job::create($validatedData);
-        return response()->json([
-            'job' => $job,
-        ], 201);}
+                $job = Job::create($validatedData);
+                return response()->json([
+                    'job' => $job,
+                    'remaining_company_account_balance' => $remainingAmount
+                ], 201);
+            } else {
+                $job = Job::create($validatedData);
+                return response()->json([
+                    'job' => $job,
+                ], 201);
+            }
+        } else {
+            $job = Job::create($validatedData);
+            return response()->json([
+                'job' => $job,
+            ], 201);
+        }
     } else {
-        return "user not auth";
+        return response()->json(['error' => 'User not authorized.'], 403);
     }
+}
+
+public function jobsByCompany($company_id)
+{
+    $jobs = Job::where('company_id', $company_id)->get();
+
+    return response()->json(['jobs' => $jobs]);
 }
 
 }

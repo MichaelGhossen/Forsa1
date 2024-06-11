@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -90,4 +91,35 @@ class UserController extends Controller
 
         return Response(['data' => 'User Logout successfully.'],200);
     }
+    public function chooseSkills(Request $request)
+{
+    $user = auth()->user();
+
+    $validator = validator($request->all(), [
+        'skills' => ['required', 'array'],
+        'skills.*.skill_id' => ['required', 'exists:skills,id'],
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Validation error',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $skillIds = $request->input('skills.*.skill_id');
+
+    // Sync the user's skills
+    $user->skills()->sync($skillIds);
+
+    // Refresh the user model to get the updated skills
+    $user->refresh();
+
+    $userSkills = $user->skills->pluck('id')->toArray();
+
+    return response()->json([
+        'message' => 'Skills added successfully',
+        'skills' => $userSkills
+    ], 200);
+}
 }

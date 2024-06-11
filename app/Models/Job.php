@@ -55,15 +55,8 @@ class Job extends Model
 
 
 
-public function orders()
-{
+    public function orders()
+    {
     return $this->hasMany(Order::class);
-}
-
-// //add new
-// public function job()
-// {
-//     return $this->belongsTo(Job::class);
-// }
-
     }
+}

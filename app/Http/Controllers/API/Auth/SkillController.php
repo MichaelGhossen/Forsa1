@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Auth;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Skill;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -40,9 +41,7 @@ class SkillController extends Controller
     }
     else{
         return response()->json(['error' => 'You are not authorized to delete this job.'], 403);
-
     }
-
     }
     /**
      * Display the specified skill.
@@ -130,4 +129,14 @@ class SkillController extends Controller
             ],404);
         }
         }
+        public function getUserSkills($userId)
+{
+    $user = User::with('skills')->findOrFail($userId);
+    $userSkills = $user->skills;
+
+    return response()->json([
+        'user_id' => $userId,
+        'skills' => $userSkills
+    ]);
+}
 }

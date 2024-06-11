@@ -72,20 +72,24 @@ class UpdateController extends Controller
 
         return response()->json($user);
     }
-    public function updateCompany(Request $request,$id)
+    public function updateCompany(Request $request, $id)
     {
         // Validate the incoming request data
-        $validatedData = $this->validate($request, [
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:companies,email,'. $id,
             'password' => 'nullable|string|min:8', // Assuming password is optional
-            'commercial_register' => 'required|string|max:255',
             'user_type' => 'required|string'
         ]);
 
-
         // Retrieve the company by ID
         $company = Companies::findOrFail($id);
+
+        // Check if a new password has been provided
+        if ($request->has('password')) {
+            // Hash the new password
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        }
 
         // Update the company attributes
         $company->fill($validatedData);
@@ -93,4 +97,5 @@ class UpdateController extends Controller
 
         return response()->json($company, 200);
     }
+
 }

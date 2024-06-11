@@ -83,7 +83,19 @@ public function account()
 {
     return $this->hasOne(Account::class);
 }
+public function skills()
+{
+    return $this->belongsToMany(Skill::class);
+}
 
+public function chooseSkills($skillIds)
+{
+    $this->skills()->sync($skillIds);
+}
 
+public function orderforfreelances()
+{
+    return $this->hasMany(OrderForFreelance::class, 'user_id');
+}
 
 }

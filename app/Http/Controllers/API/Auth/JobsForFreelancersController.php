@@ -35,32 +35,39 @@ class JobsForFreelancersController extends Controller
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
         $job = JobsForFreelancers::findOrFail($id);
-        if (!$job) {
-            return response()->json(['error' => 'You dont have an job.'], 401);
-        }
-
         if ($user->user_type === 'job_owner') {
-    $validatedData = $request->validate([
-    'title' => 'required|string|max:255',
-    'min_duration' => 'required|date',
-    'max_duration' => 'required|date',
-    'requirements' => 'required|string',
-    'min_salary' => 'nullable|numeric',
-    'max_salary' => 'nullable|numeric',
-    'languages' => 'required',
-    'description' => 'required|string',
-    'category_id' => 'required|exists:categories,id',
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'min_duration' => 'required|date',
+                'max_duration' => 'required|date',
+                'skills' => ['required', 'array'],
+                'skills.*.skill_id' => ['required', 'exists:skills,id'],
+                'min_salary' => 'nullable|numeric',
+                'max_salary' => 'nullable|numeric',
+                'languages' => 'required',
+                'description' => 'required|string',
+                'category_id' => 'required|exists:categories,id',
             ]);
 
-            $job ->update($validatedData);
+            // Update the job details
+            $job->title = $validatedData['title'];
+            $job->min_duration = $validatedData['min_duration'];
+            $job->max_duration = $validatedData['max_duration'];
+            $job->min_salary = $validatedData['min_salary'];
+            $job->max_salary = $validatedData['max_salary'];
+            $job->languages = $validatedData['languages'];
+            $job->description = $validatedData['description'];
+            $job->category_id = $validatedData['category_id'];
+            $job->save();
 
-            return response()->json($job, 201);
-    }
-            else{
-                return "user not auth";
-            }
+            // Attach the selected skills to the job
+            $job->skills()->sync($validatedData['skills']);
 
+            return response()->json($job, 200);
+        } else {
+            return "User not authorized";
         }
+    }
     public function destroy($id)
     {
         $user = Auth::user();
@@ -104,7 +111,8 @@ class JobsForFreelancersController extends Controller
     }
 }
 
-public function create(Request $request)
+
+    public function create(Request $request)
 {
     $user = Auth::user();
 
@@ -118,31 +126,46 @@ public function create(Request $request)
             'title' => 'required|string|max:255',
             'min_duration' => 'required|date',
             'max_duration' => 'required|date',
-            'requirements' => 'required|string',
+            'skills' => ['required', 'array'],
+            'skills.*.skill_id' => ['required', 'exists:skills,id'],
             'min_salary' => 'nullable|numeric',
             'max_salary' => 'nullable|numeric',
             'languages' => 'required',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
-
         ]);
 
         // Get the job owner's account
         $jobOwnerAccount = Account::where('user_id', $user->id)->first();
 
         // Calculate the amount to deduct from the job owner's account
-        $amountToDeduct = 50; // For example, deduct $50 for creating a job
+        $amountToDeduct = 15; // For example, deduct $50 for creating a job
 
-        // Check if the job owner has enough balance
+        // Check if the job ow ner has enough balance
         if ($jobOwnerAccount->amount >= $amountToDeduct) {
             // Update the job owner's account
             $jobOwnerAccount->amount -= $amountToDeduct;
             $jobOwnerAccount->save();
 
-            $job = JobsForFreelancers::create($validatedData);
+            $job = JobsForFreelancers::create([
+                'title' => $validatedData['title'],
+                'min_duration' => $validatedData['min_duration'],
+                'max_duration' => $validatedData['max_duration'],
+                'min_salary' => $validatedData['min_salary'],
+                'max_salary' => $validatedData['max_salary'],
+                'languages' => $validatedData['languages'],
+                'description' => $validatedData['description'],
+                'category_id' => $validatedData['category_id'],
+            ]);
+
+            // Attach the selected skills to the job
+            $job->skills()->sync($validatedData['skills']);
+
+            // Retrieve the job details
+            $jobDetails = JobsForFreelancers::with('skills')->find($job->id);
 
             return response()->json([
-                'job' => $job,
+                'job' => $jobDetails,
                 'remaining_job_owner_account_balance' => $jobOwnerAccount->amount
             ], 201);
         } else {

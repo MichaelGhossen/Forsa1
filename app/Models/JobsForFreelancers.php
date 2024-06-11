@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class JObsForFreelancers extends Model
 {
     use HasFactory;
+    //protected $table = 'jobs_for_freelancers';
     protected $fillable = [
         'title',
         'min_duration',
@@ -37,4 +38,16 @@ public function category()
     return $this->belongsTo(Category::class);
 }
 
+public function skills()
+{
+    return $this->belongsToMany(Skill::class, 'requirements', 'j_obs_for_freelancers_id', 'skill_id');
+}
+public function orders()
+{
+    return $this->hasMany(OrderForFreelance::class, 'j_obs_for_freelancers_id');
+}
+public function requirements()
+{
+    return $this->hasMany(Requirement::class);
+}
 }
