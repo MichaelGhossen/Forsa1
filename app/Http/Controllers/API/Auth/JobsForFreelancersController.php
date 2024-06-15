@@ -5,80 +5,92 @@ namespace App\Http\Controllers\API\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\JobsForFreelancers;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 class JobsForFreelancersController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $jobs = JobsForFreelancers::all();
-        $arr[]=null;
-        $i=0;
-        foreach($jobs as $jobs)
-     {  $arr[$i++]=$jobs;
-    }
-        return response()->json(['message'=>$arr],200);
+        $jobs = JobsForFreelancers::with('skills')->get();
+
+        if ($request->has('skills')) {
+            $jobs = $jobs->filter(function ($job) use ($request) {
+                $jobSkills = $job->skills->pluck('id')->toArray();
+                return count(array_intersect($request->get('skills'), $jobSkills)) === count($request->get('skills'));
+            });
+        }
+
+        return response()->json(['message' => $jobs], 200);
     }
 
     public function show($id)
     {
-        $job = JobsForFreelancers::findOrFail($id);
+        $job = JobsForFreelancers::with('skills')->findOrFail($id);
         return response()->json($job);
     }
     public function update(Request $request, $id)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        // Check if the user is a job owner
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
-        }
-        $job = JobsForFreelancers::findOrFail($id);
-        if ($user->user_type === 'job_owner') {
-            $validatedData = $request->validate([
-                'title' => 'required|string|max:255',
-                'min_duration' => 'required|date',
-                'max_duration' => 'required|date',
-                'skills' => ['required', 'array'],
-                'skills.*.skill_id' => ['required', 'exists:skills,id'],
-                'min_salary' => 'nullable|numeric',
-                'max_salary' => 'nullable|numeric',
-                'languages' => 'required',
-                'description' => 'required|string',
-                'category_id' => 'required|exists:categories,id',
-            ]);
-
-            // Update the job details
-            $job->title = $validatedData['title'];
-            $job->min_duration = $validatedData['min_duration'];
-            $job->max_duration = $validatedData['max_duration'];
-            $job->min_salary = $validatedData['min_salary'];
-            $job->max_salary = $validatedData['max_salary'];
-            $job->languages = $validatedData['languages'];
-            $job->description = $validatedData['description'];
-            $job->category_id = $validatedData['category_id'];
-            $job->save();
-
-            // Attach the selected skills to the job
-            $job->skills()->sync($validatedData['skills']);
-
-            return response()->json($job, 200);
-        } else {
-            return "User not authorized";
-        }
+    // Check if the user is a job owner
+    if (!$user) {
+        return response()->json(['error' => 'Unauthenticated.'], 401);
     }
+
+    $job = JobsForFreelancers::with('skills')->findOrFail($id);
+    if ($user->user_type === 'job_owner') {
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'min_duration' => 'required|date',
+            'max_duration' => 'required|date',
+            'skills' => ['required', 'array'],
+            'skills.*.skill_id' => ['required', 'exists:skills,id'],
+            'salary' => 'nullable|numeric',
+            'languages' => 'required',
+            'description' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+        ]);
+
+        // Update the job details
+        $job->title = $validatedData['title'];
+        $job->min_duration = $validatedData['min_duration'];
+        $job->max_duration = $validatedData['max_duration'];
+        $job->salary = $validatedData['salary'];
+        $job->languages = $validatedData['languages'];
+        $job->description = $validatedData['description'];
+        $job->category_id = $validatedData['category_id'];
+        $job->save();
+
+        // Attach the selected skills to the job
+        $job->skills()->sync($validatedData['skills']);
+
+        // Load the updated job and its skills
+        $job->load('skills');
+
+        return response()->json($job, 200);
+    } else {
+        return "User not authorized";
+    }
+}
     public function destroy($id)
     {
         $user = Auth::user();
-        $job = JobsForFreelancers::findOrFail($id);
+        try {
+            $job = JobsForFreelancers::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Job not found'], 404);
+        }
 
-        // Check if the user is the job_owner
-        if ($user->user_type !== 'job_owner') {
+        // Check if the user is the job_owner ||
+        if ($user->user_type === 'job_owner'||$user->user_type === 'admin') {
+            $job->delete();
+        }
+        else{
             return response()->json(['error' => 'You are not authorized to delete this job.'], 403);
         }
 
-        $job->delete();
         return response()->json(['message' => 'Job deleted successfully']);
     }
 
@@ -128,8 +140,7 @@ class JobsForFreelancersController extends Controller
             'max_duration' => 'required|date',
             'skills' => ['required', 'array'],
             'skills.*.skill_id' => ['required', 'exists:skills,id'],
-            'min_salary' => 'nullable|numeric',
-            'max_salary' => 'nullable|numeric',
+            'salary' => 'nullable|numeric',
             'languages' => 'required',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
@@ -151,8 +162,7 @@ class JobsForFreelancersController extends Controller
                 'title' => $validatedData['title'],
                 'min_duration' => $validatedData['min_duration'],
                 'max_duration' => $validatedData['max_duration'],
-                'min_salary' => $validatedData['min_salary'],
-                'max_salary' => $validatedData['max_salary'],
+                'salary' => $validatedData['salary'],
                 'languages' => $validatedData['languages'],
                 'description' => $validatedData['description'],
                 'category_id' => $validatedData['category_id'],

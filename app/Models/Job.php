@@ -24,6 +24,7 @@ class Job extends Model
             'category_id',
             'location',
              'company_id',
+             'user_id',
         ];
 
         protected $casts = [

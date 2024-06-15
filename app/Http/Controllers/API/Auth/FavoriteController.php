@@ -5,8 +5,10 @@ namespace App\Http\Controllers\API\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Favorite;
+use App\Models\Job;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 class FavoriteController extends Controller
 {
     public function store(Request $request)
@@ -59,5 +61,38 @@ public function getAllFavorites(Request $request, $id)
                          ->get();
     // Return the favorite jobs as a JSON response
     return response()->json($favoriteJobs);
+}
+public function searchFavorite(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'job_id' => 'required',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Search field is required',
+            'error' => $validator->errors()
+        ], 422);
+    }
+
+    $user = Auth::user();
+    $favorite = $user->favorites()->where('job_id', $request->job_id)->first();
+
+    if ($favorite) {
+        $job = Job::find($favorite->job_id);
+
+        return response()->json([
+            'data' => [
+                'title' => $job->title,
+                'favorite_id' => $favorite->id
+            ],
+            'message' => 'Favorite job found'
+        ], 200);
+    } else {
+        return response()->json([
+            'data' => null,
+            'message' => 'No favorite job found with the given ID'
+        ], 404);
+    }
 }
 }

@@ -59,11 +59,18 @@ use Illuminate\Http\Request;
     Route::middleware('auth:sanctum')->post('/users/choose-skills', [UserController::class, 'chooseSkills']);
     Route::middleware('auth:sanctum')->get('/user/skills/{id}', [SkillController::class, 'getUserSkills']);
 
-    Route::middleware('auth:sanctum')->get('show/admin', [ShowController::class, 'showAdmin']);
-    Route::middleware('auth:sanctum')->get('show/job_seeker', [ShowController::class, 'showJObSeeker']);
-    Route::middleware('auth:sanctum')->get('show/job_owner', [ShowController::class, 'showJobOwner']);
-    Route::middleware('auth:sanctum')->get('show/company', [ShowController::class, 'showCompany']);
+    Route::middleware('auth:sanctum')->group(function () {
+    Route::get('show/admin', [ShowController::class, 'showAdmin']);
+    Route::get('show/job_seeker', [ShowController::class, 'showJObSeeker']);
+    Route::get('show/job_owner', [ShowController::class, 'showJobOwner']);
+    Route::get('show/company', [ShowController::class, 'showCompany']);
+    Route::get('show/all/users', [ShowController::class, 'getAllUsers']);
+    Route::get('show/all/companies', [ShowController::class, 'getAllCompanies']);
+    Route::get('show/user/{id}', [ShowController::class, 'showUserById']);
+    Route::get('show/company/{id}', [ShowController::class, 'showCompanyById']);
+    Route::get('show/flagForUser/{id}', [ShowController::class, 'getFlagByUserId']);
 
+});
     Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::group(['prefix' => 'logout'], function () {
             Route::post('admin', [LogoutController::class, 'logoutAdmin']);
@@ -75,11 +82,17 @@ use Illuminate\Http\Request;
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update/job_seeker', [UpdateController::class, 'updateJobSeeker']);
         Route::post('/update/job_owner', [UpdateController::class, 'updateJobOwner']);
+        Route::post('/update/flag/{id}', [UpdateController::class, 'updateFlag']);
+
     });
 Route::middleware('auth:sanctum')->group(function () {
 Route::post('/delete/job_seeker', [DeleteController::class, 'deleteJobseeker']);
 Route::post('/delete/job_owner', [DeleteController::class, 'deleteJobowner']);
 Route::post('/delete/company', [DeleteController::class, 'deleteCompany']);
+Route::post('/delete/job_seeker/{id}', [DeleteController::class, 'deleteJobSeekerById']);
+Route::post('/delete/job_owner/{id}', [DeleteController::class, 'deleteJobOwnerById']);
+Route::post('/delete/company/{id}', [DeleteController::class, 'deleteCompanyById']);
+
 });
 // routes/api.php
 Route::middleware('auth:sanctum')->group(function () {
@@ -89,6 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/job/update/{id}', [JobController::class,'update']);
     Route::post('/job/delete/{id}', [JobController::class,'destroy']);
     Route::get('/jobs/company/{id}', [JobController::class,'jobsByCompany']);
+    Route::get('/jobs/admin/{id}', [JobController::class,'getJobsByUserId']);
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -127,8 +142,8 @@ Route::post('jobs/freelancer/search', [JobsForFreelancersController::class,'sear
 Route::post('category/search', [CategoryController::class,'searchCategory']);
 Route::post('skill/search', [SkillController::class,'searchSkill']);
 Route::get('/cvs/company/{companyId}', [CvController::class, 'getCvsByCompanyId']);
-
 Route::post('/update/company/{id}', [UpdateController::class, 'updateCompany']);
+
 Route::middleware('auth:sanctum')->group(function () {
 Route::post('/favorites/add', [FavoriteController::class, 'store']);
 Route::post('/favorites/delete', [FavoriteController::class, 'destroy']);
@@ -136,6 +151,8 @@ Route::post('/favorites/freelance/add', [FavoriteFreelanceController::class, 'st
 Route::post('/favorites/freelance/delete', [FavoriteFreelanceController::class, 'destroy']);
 Route::get('/users/favorites/{userId}', [FavoriteController::class,'getAllFavorites']);
 Route::get('/freelancers/favorites/{userId}', [FavoriteFreelanceController::class,'getAllFavorites']);
+Route::post('favorite/search', [FavoriteController::class,'searchFavorite']);
+Route::post('favorite/freelance/search', [FavoriteFreelanceController::class,'searchFavoriteForFreelance']);
 
 });
 Route::middleware('auth:sanctum')->group(function () {
@@ -165,3 +182,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/freelance/order/show/{id}', [OrderForFreelanceController::class,'show']);
     Route::get('/freelance/order/user_id/{id}', [OrderForFreelanceController::class,'getAllOrdersForUser']);
 });
+

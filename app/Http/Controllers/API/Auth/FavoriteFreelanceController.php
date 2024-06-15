@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\JObsForFreelancers;
 use App\Models\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 class FavoriteFreelanceController extends Controller
 {
     public function store(Request $request)
@@ -57,4 +59,38 @@ class FavoriteFreelanceController extends Controller
                              ->get();
         return response()->json($favoriteJobs);
     }
+
+public function searchFavoriteForFreelance(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'j_obs_for_freelancers_id' => 'required',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Search field is required',
+            'error' => $validator->errors()
+        ], 422);
+    }
+
+    $user = Auth::user();
+    $freelance_favorites = $user->freelance_favorites()->where('j_obs_for_freelancers_id', $request->j_obs_for_freelancers_id)->first();
+
+    if ($freelance_favorites) {
+        $job = JObsForFreelancers::find($freelance_favorites->j_obs_for_freelancers_id);
+
+        return response()->json([
+            'data' => [
+                'title' => $job->title,
+                'freelance_favorites_id' => $freelance_favorites->id
+            ],
+            'message' => 'Favorite freelance job found'
+        ], 200);
+    } else {
+        return response()->json([
+            'data' => null,
+            'message' => 'No favorite freelance job found with the given ID'
+        ], 404);
+    }
+}
 }

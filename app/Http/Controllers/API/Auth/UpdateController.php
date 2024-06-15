@@ -3,9 +3,12 @@ namespace App\Http\Controllers\API\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Companies;
+use App\Models\User;
 use App\Models\Users;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 class UpdateController extends Controller
 {
     public function updateJobSeeker(Request $request)
@@ -97,5 +100,26 @@ class UpdateController extends Controller
 
         return response()->json($company, 200);
     }
+    public function updateFlag($id, Request $request)
+    {
+        $user = Auth::user();
 
+        // Check if the user is an admin
+        if ($user->user_type === 'admin') {
+
+        try {
+            $userToUpdate = User::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $userToUpdate->flag = $request->input('flag');
+        $userToUpdate->save();
+
+        return response()->json(['message' => 'User flag updated successfully']);
+    }
+    else{
+        return response()->json(['error' => 'You are not authorized to update the flag.'], 403);
+    }
+    }
 }

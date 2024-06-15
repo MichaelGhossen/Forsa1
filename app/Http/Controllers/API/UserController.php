@@ -122,4 +122,5 @@ class UserController extends Controller
         'skills' => $userSkills
     ], 200);
 }
+
 }

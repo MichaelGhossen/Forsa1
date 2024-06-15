@@ -54,8 +54,8 @@ class JobController extends Controller
     'description' => 'required|string',
     'category_id' => 'required|exists:categories,id',
     'location' => 'nullable|string',
-    'company_id'=>'required',
-
+    'company_id'=>'nullable',
+    'user_id'=>'nullable',
             ]);
 
             $job ->update($validatedData);
@@ -136,6 +136,7 @@ public function create(Request $request)
             'category_id' => 'required|exists:categories,id',
             'location' => 'nullable|string',
             'company_id' => 'nullable',
+            'user_id'=>'nullable',
         ]);
 
         if ($user->user_type !== 'admin') {
@@ -186,5 +187,9 @@ public function jobsByCompany($company_id)
 
     return response()->json(['jobs' => $jobs]);
 }
-
+public function getJobsByUserId($userId)
+{
+    $jobs = Job::where('user_id', $userId)->get();
+    return response()->json(['jobs' => $jobs]);
+}
 }
