@@ -102,21 +102,25 @@ class LoginController extends Controller
         return response(['message' => 'Invalid credentials'], 401);
     }
     public function loginCompany(Request $request): JsonResponse
-{
-    $validatedData = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|string',
-    ]);
+    {
+        $validatedData = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-    $company = Companies::where('email', $validatedData['email'])->first();
+        $company = Companies::where('email', $validatedData['email'])->first();
 
-    if ($company && Hash::check($validatedData['password'], $company->password)) {
-        // Generate a token for the company user
-        $token = $company->createToken('company_token')->plainTextToken;
+        if ($company && Hash::check($validatedData['password'], $company->password)) {
+            // Generate a token for the company user
+            $token = $company->createToken('company_token')->plainTextToken;
 
-        return response()->json(['token' => $token], 200);
-    } else {
-        return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json([
+                'token' => $token,
+                'flag' => $company->flag,
+                'id' => $company->id
+            ], 200);
+        } else {
+            return response()->json(['message' => 'Invalid credentials'], 401);
+        }
     }
-}
 }

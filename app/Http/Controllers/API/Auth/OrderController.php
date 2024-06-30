@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Companies;
+use App\Models\CV;
 use App\Models\Job;
 use App\Models\Order;
 use App\Models\User;
@@ -32,27 +33,47 @@ class OrderController extends Controller
         $validatedData = $request->validate([
             'job_id' => 'required|exists:jobs,id',
             'company_id' => 'required|exists:companies,id',
-            'cv_id' => 'required|exists:c_v_s,id',
+            'user_id' => 'required|exists:users,id'
         ]);
 
         $job = Job::findOrFail($request->job_id);
         $company = Companies::findOrFail($request->company_id);
+        $user = User::findOrFail($request->user_id);
+
         // Check if the user has already applied for the job
-        $existingOrder = Order::where('user_id', Auth::id())
+        $existingOrder = Order::where('user_id', $request->user_id)
                             ->where('job_id', $job->id)
                             ->where('company_id', $company->id)
                             ->first();
         if ($existingOrder) {
             return response()->json(['message' => 'You have already applied for this job.'], 400);
         }
-        $order = new Order();
-        $order->user_id = Auth::id();
-        $order->job_id = $job->id;
-        $order->company_id = $company->id;
-        $order->save();
-        return response()->json($order, 201);
-    }
 
+        // Retrieve the user's CV ID
+        $userCV = CV::where('user_id', $request->user_id)->first();
+        $cv_id = $userCV ? $userCV->id : null;
+
+        // Check if the user has a CV
+        if ($cv_id) {
+            $order = new Order();
+            $order->user_id = $request->user_id;
+            $order->job_id = $job->id;
+            $order->company_id = $company->id;
+            $order->cv_id = $cv_id;
+            $order->save();
+
+            // Return the order and CV ID in the response
+            return response()->json([
+                'order' => $order,
+              //  'cv_id' => $cv_id
+            ], 201);
+        } else {
+            // Return a message if the user doesn't have a CV
+            return response()->json([
+                'message' => 'You need to upload a CV before applying for this job.'
+            ], 400);
+        }
+    }
 
     public function update(Request $request, $id)
     {
@@ -100,6 +121,26 @@ public function getOrdersByCompanyId($companyId)
         $orders = $user->orders()->get();
         // Return the favorite jobs as a JSON response
         return response()->json($orders);
+    }
+    public function getOrdersByCompanyAndJobId($companyId, $jobId)
+    {
+        $orders = Order::where('company_id', $companyId)
+                       ->where('job_id', $jobId)
+                       ->get();
+
+        $orderData = [];
+
+        foreach ($orders as $order) {
+            $orderData[] = [
+                'id' => $order->id,
+                'user_id' => $order->user_id,
+                'job_id' => $order->job_id,
+                'company_id' => $order->company_id,
+                'cv_id' => $order->cv_id,
+            ];
+        }
+
+        return response()->json(['orders' => $orderData], 200);
     }
 }
 

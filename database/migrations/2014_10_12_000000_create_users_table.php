@@ -19,7 +19,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('image')->nullable();
-            $table->boolean('flag')->default(0);
+            $table->string('fileType')->nullable();
+            $table->integer('flag')->default(0);
             $table->enum('user_type', ['job_owner','job_seeker', 'freelancer', 'company', 'admin']);
             $table->rememberToken();
             $table->timestamps();

@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CV;
+use App\Models\JobOwner;
 use App\Models\JObsForFreelancers;
+use App\Models\Order;
 use App\Models\OrderForFreelance;
 use App\Models\User;
+use App\Models\UserSkill;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -54,36 +58,66 @@ public function getOrdersByJobOwnerId($UserId)
     return response()->json(['message' => $arr], 200);
 }
 
-    public function createOrder(Request $request)
-    {
-        // Validate the input data
-        $validatedData = $request->validate([
-            'j_obs_for_freelancers_id' => 'required|exists:j_obs_for_freelancers,id',
-            'user_id' => 'required|exists:users,id',
-        ]);
+public function createOrder(Request $request)
+{
+    // Validate the input data
+    $validatedData = $request->validate([
+        'j_obs_for_freelancers_id' => 'required|exists:j_obs_for_freelancers,id',
+        'user_id' => 'required|exists:users,id',
+        'job_owner_id' => 'required|exists:job_owners,id',
+    ]);
 
-        // Get the job details from the JobsForFreelancers model
-        $job = JObsForFreelancers::with('requirements')->findOrFail($validatedData['j_obs_for_freelancers_id']);
+    // Get the job details from the JobsForFreelancers model
+    $job = JObsForFreelancers::with('requirements')->findOrFail($validatedData['j_obs_for_freelancers_id']);
+    $job_owner = JobOwner::findOrFail($validatedData['job_owner_id']);
+    $user = User::findOrFail($validatedData['user_id']);
 
-        // Check if the user has already created an order for this job
-        $existingOrder = OrderForFreelance::where('j_obs_for_freelancers_id', $validatedData['j_obs_for_freelancers_id'])
-                                          ->where('user_id', $validatedData['user_id'])
-                                          ->first();
+    // Check if the user has already created an order for this job
+    $existingOrder = OrderForFreelance::where('j_obs_for_freelancers_id', $validatedData['j_obs_for_freelancers_id'])
+                                      ->where('user_id', $validatedData['user_id'])
+                                      ->where('job_owner_id', $validatedData['job_owner_id'])
+                                      ->first();
 
-        if ($existingOrder) {
-            return response()->json(['message' => 'You have already created an order for this job.', 'required_skills' => $job->requirements->toArray()], 400);
+    if ($existingOrder) {
+        return response()->json(['message' => 'You have already applied for this job.'], 400);
+    }
+
+    // Retrieve the user's CV ID
+    $userCV = CV::where('user_id', $validatedData['user_id'])->first();
+    $cv_id = $userCV ? $userCV->id : null;
+
+    // Check if the user has a CV
+    if ($cv_id) {
+        // Check if the user has the required skills
+        $userSkills =UserSkill::where('user_id', $validatedData['user_id'])->pluck('skill_id')->toArray();
+        $requiredSkills = $job->requirements->pluck('skill_id')->toArray();
+        $missingSkills = array_diff($requiredSkills, $userSkills);
+
+        if (!empty($missingSkills)) {
+            return response()->json([
+                'message' => 'You don\'t have enough skills to apply for this job.',
+                'missing_skills' => $missingSkills
+            ], 400);
         }
 
-        // Create the order
-        $order = new OrderForFreelance([
-            'j_obs_for_freelancers_id' => $validatedData['j_obs_for_freelancers_id'],
-            'user_id' => $validatedData['user_id'],
-        ]);
+        $order = new OrderForFreelance();
+        $order->j_obs_for_freelancers_id = $validatedData['j_obs_for_freelancers_id'];
+        $order->user_id = $validatedData['user_id'];
+        $order->job_owner_id = $validatedData['job_owner_id'];
+        $order->cv_id = $cv_id;
         $order->save();
 
-        $requiredSkills = $job->requirements->pluck('name')->toArray();
-        return response()->json(['message' => 'Order created successfully', 'order' => $order, 'required_skills' => $job->requirements->toArray()], 201);
+        // Return the order and CV ID in the response
+        return response()->json([
+            'order' => $order,
+        ], 201);
+    } else {
+        // Return a message if the user doesn't have a CV
+        return response()->json([
+            'message' => 'You need to upload a CV before applying for this job.'
+        ], 400);
     }
+}
     public function update(Request $request, $id)
     {
         $order = OrderForFreelance::findOrFail($id);
@@ -106,4 +140,25 @@ public function getOrdersByJobOwnerId($UserId)
         // Return the orders as a JSON response
         return response()->json($orders, 200);
     }
+
+    public function getOrdersByJobOwnerAndJobForFreelanceId($job_owner_id, $j_obs_for_freelancers_id)
+{
+    $orders = OrderForFreelance::where('job_owner_id', $job_owner_id)
+                               ->where('j_obs_for_freelancers_id', $j_obs_for_freelancers_id)
+                               ->get();
+
+    $orderData = [];
+
+    foreach ($orders as $order) {
+        $orderData[] = [
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'j_obs_for_freelancers_id' => $order->j_obs_for_freelancers_id,
+            'job_owner_id' => $order->job_owner_id,
+            'cv_id' => $order->cv_id,
+        ];
+    }
+
+    return response()->json(['orders' => $orderData], 200);
+}
 }

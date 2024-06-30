@@ -52,10 +52,10 @@ return [
             'driver' => 'session',
             'provider' => 'job_owners',
         ],
-        'freelancer' => [
-            'driver' => 'session',
-            'provider' => 'freelancers',
-        ],
+        // 'freelancer' => [
+        //     'driver' => 'session',
+        //     'provider' => 'freelancers',
+        // ],
         'company' => [
             'driver' => 'session',
             'provider' => 'companies',
@@ -96,10 +96,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\JobOwner::class,
         ],
-        'freelancers' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Freelancer::class,
-        ],
+        // 'freelancers' => [
+        //     'driver' => 'eloquent',
+        //     'model' => App\Models\Freelancer::class,
+        // ],
         'companies' => [
             'driver' => 'eloquent',
             'model' => App\Models\Companies::class,

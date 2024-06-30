@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+
 class UpdateController extends Controller
 {
     public function updateJobSeeker(Request $request)
@@ -35,7 +38,12 @@ class UpdateController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $user->image = $request->file('image')->store('public/images');
+            $file = $request->file('image');
+            $imagePath = 'images/' . time() . $file->getClientOriginalName();
+            $type = $file->guessClientExtension();
+            Storage::disk('public')->put($imagePath, File::get($file));
+            $user->image =$imagePath;
+            $user->fileType =$type;
         }
 
         $user->save();
@@ -68,7 +76,12 @@ class UpdateController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $user->image = $request->file('image')->store('public/images');
+            $file = $request->file('image');
+            $imagePath = 'images/' . time() . $file->getClientOriginalName();
+            $type = $file->guessClientExtension();
+            Storage::disk('public')->put($imagePath, File::get($file));
+            $user->image =$imagePath;
+            $user->fileType =$type;
         }
 
         $user->save();
@@ -122,4 +135,24 @@ class UpdateController extends Controller
         return response()->json(['error' => 'You are not authorized to update the flag.'], 403);
     }
     }
+    public function updateFlagCompany($id, Request $request)
+{
+    $user = Auth::user();
+
+    // Check if the user is an admin
+    if ($user->user_type === 'admin') {
+        try {
+            $companyToUpdate = Companies::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Company not found'], 404);
+        }
+
+        $companyToUpdate->flag = $request->input('flag');
+        $companyToUpdate->save();
+
+        return response()->json(['message' => 'Company flag updated successfully']);
+    } else {
+        return response()->json(['error' => 'You are not authorized to update the flag.'], 403);
+    }
+}
 }

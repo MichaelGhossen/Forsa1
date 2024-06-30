@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('commercial_register');
+            $table->integer('flag')->default(0);
             $table->string('user_type')->default('company');
             $table->timestamps();
 

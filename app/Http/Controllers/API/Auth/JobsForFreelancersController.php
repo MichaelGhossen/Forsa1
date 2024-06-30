@@ -13,15 +13,15 @@ class JobsForFreelancersController extends Controller
 {
     public function index(Request $request)
     {
-        $jobs = JobsForFreelancers::with('skills')->get();
+        $jobs = JobsForFreelancers::select('id', 'title', 'category_id');
 
         if ($request->has('skills')) {
-            $jobs = $jobs->filter(function ($job) use ($request) {
-                $jobSkills = $job->skills->pluck('id')->toArray();
-                return count(array_intersect($request->get('skills'), $jobSkills)) === count($request->get('skills'));
+            $jobs = $jobs->whereHas('skills', function ($query) use ($request) {
+                $query->whereIn('id', $request->get('skills'));
             });
         }
 
+        $jobs = $jobs->get();
         return response()->json(['message' => $jobs], 200);
     }
 
@@ -192,30 +192,10 @@ class JobsForFreelancersController extends Controller
 }
 public function getJobsByJobOwnerId($userId)
 {
-    $jobs = JobsForFreelancers::where('user_id', $userId)->get();
-
-    $jobsWithSkills = $jobs->map(function ($job) {
-        $skills = $job->skills()->get(['skills.id', 'skills.name', 'skills.description']);
-        return [
-            'id' => $job->id,
-            'title' => $job->title,
-            'min_duration' => $job->min_duration,
-            'max_duration' => $job->max_duration,
-            'salary' => $job->salary,
-            'languages' => $job->languages,
-            'description' => $job->description,
-            'category_id' => $job->category_id,
-            'skills' => $skills->map(function ($skill) {
-                return [
-                    'id' => $skill->id,
-                    'name' => $skill->name,
-                    'description' => $skill->description,
-                ];
-            })->toArray(),
-        ];
-    });
-
-    return response()->json(['jobsForFreelance' => $jobsWithSkills]);
+    $jobs = JobsForFreelancers::where('user_id', $userId)
+        ->select('id', 'title', 'category_id')
+        ->get();
+        return response()->json(['jobsForFreelance' => $jobs]);
 }
 public function getJobsFreelanceByJobOwnerAndCategroyId($user_id, $category_id)
 {
@@ -229,30 +209,9 @@ public function getJobsFreelanceByJobOwnerAndCategroyId($user_id, $category_id)
         $query->where('category_id', $category_id);
     }
 
-    $jobs = $query->get();
-
-    $jobsWithSkills = $jobs->map(function ($job) {
-        $skills = $job->skills()->get(['skills.id', 'skills.name', 'skills.description']);
-        return [
-            'id' => $job->id,
-            'title' => $job->title,
-            'min_duration' => $job->min_duration,
-            'max_duration' => $job->max_duration,
-            'salary' => $job->salary,
-            'languages' => $job->languages,
-            'description' => $job->description,
-            'category_id' => $job->category_id,
-            'skills' => $skills->map(function ($skill) {
-                return [
-                    'id' => $skill->id,
-                    'name' => $skill->name,
-                    'description' => $skill->description,
-                ];
-            })->toArray(),
-        ];
-    });
-
-    return response()->json(['jobs' => $jobsWithSkills]);
+    $jobs = $query->select('id', 'title', 'category_id')
+        ->get();
+        return response()->json(['jobs' => $jobs]);
 }
 public function searchJobByOwnerId(Request $request)
 {

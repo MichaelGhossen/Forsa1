@@ -12,12 +12,12 @@ class CV extends Model
         'user_id',
         'company_id',
         'file_path',
+        'job_owner_id'
     ];
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
     public function companies()
     {
         return $this->belongsToMany(Companies::class, 'cv_company');
@@ -25,5 +25,9 @@ class CV extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+    public function ordersForFreelance()
+    {
+        return $this->hasMany(OrderForFreelance::class);
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('cv_company', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('cv_id');
-            $table->unsignedBigInteger('company_id');
+            $table->unsignedBigInteger('company_id')->nullable();
             $table->timestamps();
 
             $table->foreign('cv_id')->references('id')->on('c_v_s')->onDelete('cascade');

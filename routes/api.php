@@ -17,6 +17,7 @@ use App\Http\Controllers\API\Auth\SkillController;
 use App\Http\Controllers\API\Auth\UpdateController;
 use App\Http\Controllers\API\RegisterController;
     use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\VerificationController;
 use App\Models\OrderForFreelance;
 use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Route;
@@ -83,6 +84,7 @@ use Illuminate\Http\Request;
         Route::post('/update/job_seeker', [UpdateController::class, 'updateJobSeeker']);
         Route::post('/update/job_owner', [UpdateController::class, 'updateJobOwner']);
         Route::post('/update/flag/{id}', [UpdateController::class, 'updateFlag']);
+        Route::post('/update/company/flag/{id}', [UpdateController::class, 'updateFlagCompany']);
 
     });
 Route::middleware('auth:sanctum')->group(function () {
@@ -148,6 +150,7 @@ Route::post('jobs/freelancer/search', [JobsForFreelancersController::class,'sear
 Route::post('category/search', [CategoryController::class,'searchCategory']);
 Route::post('skill/search', [SkillController::class,'searchSkill']);
 Route::get('/cvs/company/{companyId}', [CvController::class, 'getCvsByCompanyId']);
+Route::get('/cvs/job_owner/{job_owner_id}', [CvController::class, 'getCvsByjobOwnerId']);
 Route::post('/update/company/{id}', [UpdateController::class, 'updateCompany']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -157,7 +160,7 @@ Route::post('/favorites/freelance/add', [FavoriteFreelanceController::class, 'st
 Route::post('/favorites/freelance/delete', [FavoriteFreelanceController::class, 'destroy']);
 Route::get('/users/favorites/{userId}', [FavoriteController::class,'getAllFavorites']);
 Route::get('/freelancers/favorites/{userId}', [FavoriteFreelanceController::class,'getAllFavorites']);
-Route::post('favorite/search', [FavoriteController::class,'searchFavorite']);
+Route::post('favorite/search', [FavoriteController::class,'searchJobInFavorites']);
 Route::post('favorite/freelance/search', [FavoriteFreelanceController::class,'searchFavoriteForFreelance']);
 
 });
@@ -169,6 +172,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/order/company/{id}', [OrderController::class,'getOrdersByCompanyId']);
     Route::get('/order/show/{id}', [OrderController::class,'show']);
     Route::get('/order/user_id/{id}', [OrderController::class,'getAllOrders']);
+    Route::get('/order/company_id/job_id/{company_id}/{job_id}', [OrderController::class,'getOrdersByCompanyAndJobId']);
+
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/accounts', [AccountController::class,'index']);
@@ -187,5 +192,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/freelance/order/job_owner/{id}', [OrderForFreelanceController::class,'getOrdersByJobOwnerId']);
     Route::get('/freelance/order/show/{id}', [OrderForFreelanceController::class,'show']);
     Route::get('/freelance/order/user_id/{id}', [OrderForFreelanceController::class,'getAllOrdersForUser']);
+    Route::get('/freelance/orders/job_owner_id/jobForFreelance_id/{job_owner_id}/{j_obs_for_freelancers_id}', [OrderForFreelanceController::class,'getOrdersByJobOwnerAndJobForFreelanceId']);
 });
+Route::post('email/verify/send',[VerificationController::class,'sendMail']);
 
+Route::middleware('auth:sanctum')->get('/job_owners_for_admin', [UserController::class, 'getAllJobOwners']);
+Route::middleware('auth:sanctum')->get('/job_seekers_for_admin', [UserController::class, 'getAllJobSeekers']);
+Route::get('/get/picture/{id}', [RegisterController::class,'getFile']);
+Route::get('/get/cv/{id}', [CvController::class,'getCv']);
+Route::post('/jobOwner/user_id/{id}', [UserController::class,'getJobOwnerIdByUserId']);

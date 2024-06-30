@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\JobOwner;
 use App\Models\Skill;
 use App\Models\User;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
@@ -123,4 +127,32 @@ class UserController extends Controller
     ], 200);
 }
 
+public function getAllJobOwners(): JsonResponse
+{
+    $user = Auth::user();
+    if ($user->user_type === 'admin') {
+    $jobOwners = User::where('user_type', 'job_owner')->get();
+    return response()->json($jobOwners);
+}
+else{
+    return response()->json(['error' => 'You are not authorized.'], 403);
+}
+}
+public function getAllJobSeekers(): JsonResponse
+{
+    $user = Auth::user();
+    if ($user->user_type === 'admin') {
+    $jobseekers = User::where('user_type', 'job_seeker')->get();
+    return response()->json($jobseekers);
+}
+else{
+    return response()->json(['error' => 'You are not authorized.'], 403);
+}
+}
+
+public function getJobOwnerIdByUserId($user_id)
+{
+    $jobOwner = JobOwner::where('user_id', $user_id)->first();
+    return response()->json($jobOwner);
+}
 }

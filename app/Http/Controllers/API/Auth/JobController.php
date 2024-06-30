@@ -12,13 +12,8 @@ class JobController extends Controller
 {
     public function index()
     {
-        $jobs = Job::all();
-        $arr[]=null;
-        $i=0;
-        foreach($jobs as $jobs)
-     {  $arr[$i++]=$jobs;
-    }
-        return response()->json(['message'=>$arr],200);
+        $jobs = Job::select('id', 'title', 'category_id')->get();
+        return response()->json(['message'=>$jobs],200);
     }
 
     public function show($id)
@@ -54,7 +49,7 @@ class JobController extends Controller
     'description' => 'required|string',
     'category_id' => 'required|exists:categories,id',
     'location' => 'nullable|string',
-    'company_id'=>'nullable',
+    'company_id'=>'required|exists:companies,id',
     'user_id'=>'nullable',
             ]);
 
@@ -135,7 +130,7 @@ public function create(Request $request)
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'location' => 'nullable|string',
-            'company_id' => 'nullable',
+            'company_id' => 'required|exists:companies,id',
             'user_id' => 'nullable',
         ]);
 
@@ -178,45 +173,53 @@ public function create(Request $request)
         return response()->json(['error' => 'User not authorized.'], 403);
     }
 }
+
 public function jobsByCompany($company_id)
 {
-    $jobs = Job::where('company_id', $company_id)->get();
+    $jobs = Job::where('company_id', $company_id)
+        ->select('id', 'title', 'category_id')
+        ->get();
 
     return response()->json(['jobs' => $jobs]);
 }
 public function getJobsByUserId($userId)
 {
-    $jobs = Job::where('user_id', $userId)->get();
-    return response()->json(['jobs' => $jobs]);
-}
-public function getJobsByFilters($company_id, $category_id)
-{
-    $query = Job::query();
+    $jobs = Job::where('user_id', $userId)
+        ->select('id', 'title', 'category_id')
+        ->get();
 
-    if ($company_id) {
-        $query->where('company_id', $company_id);
+        return response()->json(['jobs' => $jobs]);
     }
+    public function getJobsByFilters($company_id, $category_id)
+    {
+        $query = Job::query();
 
-    if ($category_id) {
-        $query->where('category_id', $category_id);
-    }
+        if ($company_id) {
+            $query->where('company_id', $company_id);
+        }
 
-    $jobs = $query->get();
+        if ($category_id) {
+            $query->where('category_id', $category_id);
+        }
 
-    return response()->json(['jobs' => $jobs]);
-}
-public function getJobsByAdminCategory($user_id, $category_id)
-{
-    $query = Job::query();
-    if ($user_id) {
-        $query->where('user_id', $user_id);
-    }
-    if ($category_id) {
-        $query->where('category_id', $category_id);
-    }
-    $jobs = $query->get();
-    return response()->json(['jobs' => $jobs]);
-}
+        $jobs = $query->select('id', 'title', 'category_id')
+            ->get();
+
+            return response()->json(['jobs' => $jobs]);
+        }
+        public function getJobsByAdminCategory($user_id, $category_id)
+        {
+            $query = Job::query();
+            if ($user_id) {
+                $query->where('user_id', $user_id);
+            }
+            if ($category_id) {
+                $query->where('category_id', $category_id);
+            }
+            $jobs = $query->select('id', 'title', 'category_id')
+                ->get();
+                return response()->json(['jobs' => $jobs]);
+            }
 public function searchJobByCompanyId(Request $request)
 {
     $validator = Validator::make($request->all(), [

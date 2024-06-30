@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('c_v_s', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('company_id');
+            $table->unsignedBigInteger('company_id')->nullable();
+            $table->unsignedBigInteger('job_owner_id')->nullable();
             $table->text('file_path');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
+            $table->foreign('job_owner_id')->references('id')->on('job_owners')->onDelete('cascade');
 
         });
     }

@@ -4,23 +4,26 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\CV;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class CvController extends Controller
 {
     public function index()
-{
-    // Retrieve the authenticated user
-    $user = auth()->user();
+    {
+        // Retrieve the authenticated user
+        $user = auth()->user();
 
-    // Check if the user is an admin
-    if ($user && $user->user_type === 'admin') {
-        return response()->json(['message' => 'You are not authorized to access this resource'], 403);
+        // Check if the user is an admin
+        if ($user && $user->user_type === 'admin') {
+            return response()->json(['message' => 'You are not authorized to access this resource'], 403);
+        }
+        $cvs = CV::get(['id']);
+        return response()->json($cvs, 200);
     }
-    $cvs = CV::all();
-    return response()->json($cvs, 200);
-}
 
 
     /**
@@ -33,14 +36,28 @@ class CvController extends Controller
     {
         $request->validate([
             'user_id' => 'required|integer',
-            'company_id' => 'required|integer',
-            'cv' => 'required|file',
+            'company_id' => 'nullable|integer',
+            'cv' => 'required|mimes:pdf',
         ]);
-        $file_path = $request->file('cv')->store('cvs');
+
+        // Check if the user already has a CV
+        $existingCV = CV::where('user_id', $request->user_id)->first();
+        if ($existingCV) {
+            return response()->json([
+                'message' => 'User already has a CV. Cannot create another.'
+            ], 400);
+        }
+
+        $imagePath = null;
+        if ($request['cv'] != null) {
+            $file = $request->file('cv');
+            $imagePath = 'cvs/' . time() . $file->getClientOriginalName();
+            Storage::disk('public')->put($imagePath, File::get($file));
+        }
         $cv = CV::create([
             'user_id' => $request->user_id,
             'company_id' => $request->company_id,
-            'file_path' => $file_path,
+            'file_path' => $imagePath,
         ]);
 
         return response()->json($cv, 201);
@@ -66,14 +83,21 @@ class CvController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'cv' => 'required|file',
+            'cv' => 'required|mimes:pdf',
         ]);
 
-        $file_path = $request->file('cv')->store('cvs');
+
+        $file_path = null;
+        if ($request['cv'] != null) {
+            $file = $request->file('cv');
+            $file_path = 'cvs/' . time() . $file->getClientOriginalName();
+            Storage::disk('public')->put($file_path, File::get($file));
+        }
+        // $file_path = $request->file('cv')->store('cvs');
 
         $cv = CV::findOrFail($id);
         $cv->update([
-        'file_path' => $file_path,
+            'file_path' => $file_path,
         ]);
         return response()->json($cv);
     }
@@ -89,20 +113,37 @@ class CvController extends Controller
             $cv = CV::findOrFail($id);
             $cv->delete();
             return response()->json(['message' => 'CV deleted successfully']);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'CV not found.'], Response::HTTP_NOT_FOUND);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'CV not found.'], 404);
         }
     }
 
     public function getCvsByCompanyId($companyId)
     {
 
-        $cvs = Cv::where('company_id', $companyId)->get();
-        $arr[]=null;
-        $i=0;
-        foreach($cvs as $cvs)
-     {  $arr[$i++]=$cvs;
-}
-        return response()->json(['message'=>$arr],200);
+        $cvs = Cv::where('company_id', $companyId)->get(['id']);
+        return response()->json(['message' => $cvs], 200);
+    }
+
+    public function getCvsByJobOwnerId($job_owner_id)
+    {
+        $cvs = Cv::where('job_owner_id', $job_owner_id)->get(['id']);
+        return response()->json(['message' => $cvs], 200);
+    }
+
+    public function getCv($id)
+    {
+        try {
+            $file = CV::where('id', $id)->first();
+            if ($file != null) {
+                $responseFile = Storage::disk('public')->get($file['file_path']);
+                return (new Response($responseFile, 200))
+                    ->header('Content-Type', 'pdf');
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                "data" => $e->getMessage()
+            ]);
+        }
     }
 }

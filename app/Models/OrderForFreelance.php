@@ -11,6 +11,8 @@ class OrderForFreelance extends Model
     protected $fillable = [
         'user_id',
         'j_obs_for_freelancers_id',
+        'order_status',
+
     ];
     public function job()
     {
@@ -20,4 +22,13 @@ class OrderForFreelance extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function jobOwner()
+    {
+        return $this->belongsTo(JobOwner::class);
+    }
+    public function cv()
+    {
+        return $this->belongsTo(CV::class);
+    }
+
 }

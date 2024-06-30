@@ -7,6 +7,7 @@ use App\Models\JObsForFreelancers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 class FavoriteFreelanceController extends Controller
 {
@@ -63,7 +64,7 @@ class FavoriteFreelanceController extends Controller
 public function searchFavoriteForFreelance(Request $request)
 {
     $validator = Validator::make($request->all(), [
-        'j_obs_for_freelancers_id' => 'required',
+        'title' => 'required',
     ]);
 
     if ($validator->fails()) {
@@ -73,17 +74,25 @@ public function searchFavoriteForFreelance(Request $request)
         ], 422);
     }
 
-    $user = Auth::user();
-    $freelance_favorites = $user->freelance_favorites()->where('j_obs_for_freelancers_id', $request->j_obs_for_freelancers_id)->first();
+    $user = Auth::id();
+    // $freelance_favorites = $user->freelance_favorites()->where('j_obs_for_freelancers_id', $request->j_obs_for_freelancers_id)->first();
+    //j_obs_for_freelancers_id freelance_favorites
+    $favorites = DB::table('j_obs_for_freelancers')
+        ->join('freelance_favorites', 'j_obs_for_freelancers.id', '=', 'freelance_favorites.j_obs_for_freelancers_id')
+            ->where('j_obs_for_freelancers.title', 'like', '%' . $request->title . '%')
+            ->where('freelance_favorites.user_id', $user)
+            ->get([
+                "j_obs_for_freelancers.id",
+                "j_obs_for_freelancers.title",
+                "j_obs_for_freelancers.category_id"
+            ]);
 
-    if ($freelance_favorites) {
-        $job = JObsForFreelancers::find($freelance_favorites->j_obs_for_freelancers_id);
+
+    if (count($favorites)!=0) {
+        // $job = JObsForFreelancers::find($freelance_favorites->j_obs_for_freelancers_id);
 
         return response()->json([
-            'data' => [
-                'title' => $job->title,
-                'freelance_favorites_id' => $freelance_favorites->id
-            ],
+            'data' => $favorites,
             'message' => 'Favorite freelance job found'
         ], 200);
     } else {

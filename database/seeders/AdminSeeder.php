@@ -19,7 +19,8 @@ class AdminSeeder extends Seeder
             'last_name'=>'Ghossen',
             'email' => 'michaelghossen@gmail.com',
             'password' => Hash::make('12345678'),
-            'image'=>'null',
+            'image'=>null,
+            'fileType'=>null,
             //'cv'=>'NULL',
             'user_type' => 'admin'
         ]);

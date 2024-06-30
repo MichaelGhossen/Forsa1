@@ -120,62 +120,21 @@ class CategoryController extends Controller
             ],404);
         }
         }
-public function getAllJobsByCategory_id($category_id, Request $request)
-{
-    $jobs1 = Job::where('category_id', $category_id)->get();
-    $jobs2 = JobsForFreelancers::where('category_id', $category_id)
-        ->with('skills')
-        ->get();
+        public function getAllJobsByCategory_id($category_id, Request $request)
+        {
+            $jobs1 = Job::select('id', 'title', 'category_id')
+                ->where('category_id', $category_id)
+                ->get();
 
-    if ($request->has('skills')) {
-        $jobs2 = $jobs2->filter(function ($job) use ($request) {
-            $jobSkills = $job->skills->pluck('id')->toArray();
-            return count(array_intersect($request->get('skills'), $jobSkills)) === count($request->get('skills'));
-        });
-    }
+            $jobs2 = JobsForFreelancers::select('id', 'title', 'category_id')
+                ->where('category_id', $category_id)
+                ->get();
 
-    $response = [
-        'jobs' => $jobs1->map(function ($job) {
-            return [
-                'id' => $job->id,
-                'title' => $job->title,
-                'min_duration'=>$job->min_duration,
-                'max_duration'=>$job->max_duration ,
-                'min_age'=>$job->min_age ,
-                'max_age'=>$job->max_age ,
-                'min_salary'=>$job->min_salary ,
-                'max_salary'=>$job->max_salary ,
-                'gender'=>$job->gender ,
-                'languages'=>$job->languages ,
-                'description'=>$job->description ,
-                'category_id' => $job->category_id,
-                'location'=>$job->location ,
-                'company_id'=>$job->company_id ,
-                'user_id'=>$job->user_id ,
+            $response = [
+                'jobs' => $jobs1,
+                'jobs_for_freelancers' => $jobs2,
             ];
-        }),
-        'jobs_for_freelancers' => $jobs2->map(function ($job) {
-            return [
-                'id' => $job->id,
-                'title' => $job->title,
-                'min_duration' => $job->min_duration,
-                'max_duration' => $job->max_duration,
-                'salary' => $job->salary,
-                'languages' => $job->languages,
-                'description' => $job->description,
-                'category_id' => $job->category_id,
-                'user_id' => $job->user_id,
-                'skills' => $job->skills->map(function ($skill) {
-                    return [
-                        'id' => $skill->id,
-                        'name' => $skill->name,
-                        'description' => $skill->description,
-                    ];
-                })->toArray(),
-            ];
-        }),
-    ];
 
-    return response()->json($response);
-}
+            return response()->json($response);
+        }
 }

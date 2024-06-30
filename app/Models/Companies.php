@@ -15,6 +15,7 @@ class Companies extends Model
         'email',
         'password',
         'commercial_register',
+        'flag',
         'user_type',
 
     ];

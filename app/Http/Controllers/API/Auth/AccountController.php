@@ -21,40 +21,54 @@ class AccountController extends Controller
         return response()->json(['error' => 'You are not authorized.'], 403);
     }
     }
-    /**
-     * Store a newly created account in storage.
-     */
+
     public function store(Request $request)
-{   $user = Auth::user();
+    {
+    $user = Auth::user();
+
     if ($user->user_type === 'admin') {
-       $request->validate([
-    'user_id' => 'nullable|integer',
-    'company_id' => 'nullable|integer',
-    'amount' => 'required|numeric',
-]);
+        $request->validate([
+            'user_id' => 'nullable|integer|unique:accounts,user_id',
+            'company_id' => 'nullable|integer|unique:accounts,company_id',
+            'amount' => 'required|numeric',
+        ]);
 
-$account = Account::create([
-    'user_id' => $request->input('user_id'),
-    'company_id' => $request->input('company_id'),
-    'amount' => $request->input('amount'),
-]);
+        // Ensure that either user_id or company_id is provided
+        if ($request->input('user_id') === null && $request->input('company_id') === null) {
+            return response()->json(['error' => 'Either user_id or company_id must be provided.'], 400);
+        }
 
-return response()->json([
-    'user_id' => $account->user_id,
-    'company_id' => $account->company_id,
-    'amount' => $account->amount,
-    'updated_at' => $account->updated_at,
-    'created_at' => $account->created_at,
-    'id' => $account->id,
-], Response::HTTP_CREATED);
+        // Check if the user or company already has an account
+        if ($request->input('user_id')) {
+            $existingAccount = Account::where('user_id', $request->input('user_id'))->first();
+            if ($existingAccount) {
+                return response()->json(['error' => 'The user already has an account.'], 400);
+            }
+        } elseif ($request->input('company_id')) {
+            $existingAccount = Account::where('company_id', $request->input('company_id'))->first();
+            if ($existingAccount) {
+                return response()->json(['error' => 'The company already has an account.'], 400);
+            }
+        }
 
-    return response()->json($account, Response::HTTP_CREATED);
-}
-else{
-    return response()->json(['error' => 'You are not authorized.'], 403);
-}
-}
+        $account = Account::create([
+            'user_id' => $request->input('user_id'),
+            'company_id' => $request->input('company_id'),
+            'amount' => $request->input('amount'),
+        ]);
 
+        return response()->json([
+            'user_id' => $account->user_id,
+            'company_id' => $account->company_id,
+            'amount' => $account->amount,
+            'updated_at' => $account->updated_at,
+            'created_at' => $account->created_at,
+            'id' => $account->id,
+        ], Response::HTTP_CREATED);
+    } else {
+        return response()->json(['error' => 'You are not authorized.'], 403);
+    }
+    }
     /**
      * Display the specified account.
      */
