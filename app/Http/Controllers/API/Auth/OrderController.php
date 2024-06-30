@@ -97,8 +97,7 @@ public function getOrdersByCompanyId($companyId)
         $user = User::findOrFail($id);
 
         // Load the favorite jobs for the user, including the related job data
-        $orders = $user->orders()
-                             ->get();
+        $orders = $user->orders()->get();
         // Return the favorite jobs as a JSON response
         return response()->json($orders);
     }

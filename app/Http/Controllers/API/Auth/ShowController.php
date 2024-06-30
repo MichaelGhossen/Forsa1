@@ -14,11 +14,7 @@ class ShowController extends Controller
     public function showJobSeeker(Request $request)
     {
         $user = $request->user();
-
-        if (!$user || $user->user_type !== 'job_seeker'|| $user->user_type !== 'admin') {
-            return response()->json(['message' => 'Job seeker not found'], 404);
-        }
-
+        if (!$user || $user->user_type === 'job_seeker') {
         return response()->json([
             'id' => $user->id,
             'first_name' => $user->first_name,
@@ -27,15 +23,18 @@ class ShowController extends Controller
             'image' => $user->image,
             'user_type' => $user->user_type,
         ]);
+    }
+    else{
+        return response()->json(['message' => 'Job seeker not found'], 404);
+    }
     }
 
     public function showJobOwner(Request $request)
     {
         $user = $request->user();
 
-        if (!$user || $user->user_type !== 'job_owner'|| $user->user_type !== 'admin') {
-            return response()->json(['message' => 'Job owner not found'], 404);
-        }
+        if (!$user || $user->user_type === 'job_owner') {
+
 
         return response()->json([
             'id' => $user->id,
@@ -44,24 +43,27 @@ class ShowController extends Controller
             'email' => $user->email,
             'image' => $user->image,
             'user_type' => $user->user_type,
-        ]);
+        ]);}
+        else {
+       return response()->json(['message' => 'Job owner not found'], 404);
+    }
     }
 
     public function showCompany(Request $request)
     {
         $user = $request->user();
 
-        if (!$user || $user->user_type !== 'company'|| $user->user_type !== 'admin') {
-            return response()->json(['message' => 'Company not found'], 404);
-        }
-
+        if (!$user || $user->user_type === 'company') {
         return response()->json([
             'id'=>$user->id,
             'name' => $user->name,
             'email' => $user->email,
             'commercial_register'=> $user->commercial_register,
             'user_type' => $user->user_type,
-        ]);
+        ]);}
+        else{
+          return response()->json(['message' => 'Company not found'], 404);
+        }
     }
       public function showAdmin(Request $request)
     {
@@ -129,7 +131,6 @@ class ShowController extends Controller
     } catch (ModelNotFoundException $e) {
         return response()->json(['error' => 'User not found'], 404);
     }
-
     return response()->json(['flag' => $user->flag]);
 }
 

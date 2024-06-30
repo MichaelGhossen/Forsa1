@@ -62,10 +62,11 @@ public function getAllFavorites(Request $request, $id)
     // Return the favorite jobs as a JSON response
     return response()->json($favoriteJobs);
 }
+
 public function searchFavorite(Request $request)
 {
     $validator = Validator::make($request->all(), [
-        'job_id' => 'required',
+        'title' => 'required',
     ]);
 
     if ($validator->fails()) {
@@ -75,24 +76,29 @@ public function searchFavorite(Request $request)
         ], 422);
     }
 
+
     $user = Auth::user();
-    $favorite = $user->favorites()->where('job_id', $request->job_id)->first();
+    $favorite = $user->favorites()
+        ->whereHas('job', function ($query) use ($request) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        })
+        ->with('job')
+        ->first();
 
-    if ($favorite) {
-        $job = Job::find($favorite->job_id);
+    // if ($favorite) {
+    //     $job = $favorite->job;
 
-        return response()->json([
-            'data' => [
-                'title' => $job->title,
-                'favorite_id' => $favorite->id
-            ],
-            'message' => 'Favorite job found'
-        ], 200);
-    } else {
-        return response()->json([
-            'data' => null,
-            'message' => 'No favorite job found with the given ID'
-        ], 404);
+    //     return response()->json([
+    //         'data' => [
+    //             'title' => $job->title,
+    //         ],
+    //         'message' => 'Favorite job found'
+    //     ], 200);
+    // } else {
+    //     return response()->json([
+    //         'data' => null,
+    //         'message' => 'No favorite job found with the given title'
+    //     ], 404);
+    // }
     }
-}
 }

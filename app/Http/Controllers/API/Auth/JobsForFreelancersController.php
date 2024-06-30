@@ -51,6 +51,8 @@ class JobsForFreelancersController extends Controller
             'languages' => 'required',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'user_id' => 'required|exists:users,id',
+
         ]);
 
         // Update the job details
@@ -61,8 +63,8 @@ class JobsForFreelancersController extends Controller
         $job->languages = $validatedData['languages'];
         $job->description = $validatedData['description'];
         $job->category_id = $validatedData['category_id'];
+        $job->user_id = $validatedData['user_id'];
         $job->save();
-
         // Attach the selected skills to the job
         $job->skills()->sync($validatedData['skills']);
 
@@ -144,6 +146,8 @@ class JobsForFreelancersController extends Controller
             'languages' => 'required',
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'user_id' => 'required|exists:users,id',
+
         ]);
 
         // Get the job owner's account
@@ -166,6 +170,7 @@ class JobsForFreelancersController extends Controller
                 'languages' => $validatedData['languages'],
                 'description' => $validatedData['description'],
                 'category_id' => $validatedData['category_id'],
+                'user_id'=>$validatedData['user_id'],
             ]);
 
             // Attach the selected skills to the job
@@ -183,6 +188,104 @@ class JobsForFreelancersController extends Controller
         }
     } else {
         return "user not auth";
+    }
+}
+public function getJobsByJobOwnerId($userId)
+{
+    $jobs = JobsForFreelancers::where('user_id', $userId)->get();
+
+    $jobsWithSkills = $jobs->map(function ($job) {
+        $skills = $job->skills()->get(['skills.id', 'skills.name', 'skills.description']);
+        return [
+            'id' => $job->id,
+            'title' => $job->title,
+            'min_duration' => $job->min_duration,
+            'max_duration' => $job->max_duration,
+            'salary' => $job->salary,
+            'languages' => $job->languages,
+            'description' => $job->description,
+            'category_id' => $job->category_id,
+            'skills' => $skills->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                    'description' => $skill->description,
+                ];
+            })->toArray(),
+        ];
+    });
+
+    return response()->json(['jobsForFreelance' => $jobsWithSkills]);
+}
+public function getJobsFreelanceByJobOwnerAndCategroyId($user_id, $category_id)
+{
+    $query = JobsForFreelancers::query();
+
+    if ($user_id) {
+        $query->where('user_id', $user_id);
+    }
+
+    if ($category_id) {
+        $query->where('category_id', $category_id);
+    }
+
+    $jobs = $query->get();
+
+    $jobsWithSkills = $jobs->map(function ($job) {
+        $skills = $job->skills()->get(['skills.id', 'skills.name', 'skills.description']);
+        return [
+            'id' => $job->id,
+            'title' => $job->title,
+            'min_duration' => $job->min_duration,
+            'max_duration' => $job->max_duration,
+            'salary' => $job->salary,
+            'languages' => $job->languages,
+            'description' => $job->description,
+            'category_id' => $job->category_id,
+            'skills' => $skills->map(function ($skill) {
+                return [
+                    'id' => $skill->id,
+                    'name' => $skill->name,
+                    'description' => $skill->description,
+                ];
+            })->toArray(),
+        ];
+    });
+
+    return response()->json(['jobs' => $jobsWithSkills]);
+}
+public function searchJobByOwnerId(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'title' => 'required',
+        'user_id' => 'required|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Search fields are required',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $query = JobsForFreelancers::where('title', 'like', '%' . $request->title . '%');
+
+    if ($request->has('user_id')) {
+        $query->where('user_id', $request->user_id);
+    }
+
+    $jobs = $query->get();
+
+    if ($jobs->isNotEmpty()) {
+        return response()->json([
+            'data' => $jobs,
+            'message' => 'Found jobs',
+        ], 200);
+    } else {
+        return response()->json([
+            'data' => [],
+            'message' => 'No jobs matched your search',
+        ], 404);
     }
 }
 }

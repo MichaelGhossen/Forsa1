@@ -117,9 +117,9 @@ public function create(Request $request)
     $user = Auth::user();
 
     // Check if the user is a job owner, company, or admin
-    if (!$user) {
-        return response()->json(['error' => 'Unauthenticated.'], 401);
-    }
+    // if (!$user) {
+    //     return response()->json(['error' => 'Unauthenticated.'], 401);
+    // }
 
     if ($user->user_type === 'company' || $user->user_type === 'admin') {
         $validatedData = $request->validate([
@@ -136,51 +136,48 @@ public function create(Request $request)
             'category_id' => 'required|exists:categories,id',
             'location' => 'nullable|string',
             'company_id' => 'nullable',
-            'user_id'=>'nullable',
+            'user_id' => 'nullable',
         ]);
 
         if ($user->user_type !== 'admin') {
             // Get the company account
             $companyAccount = Account::where('company_id', $validatedData['company_id'])->first();
 
-            // Calculate the amount to deduct from the company account
-            $amountToDeduct = 15; // Fixed amount of 15
-            $remainingAmount = $companyAccount->amount - $amountToDeduct;
+            if ($companyAccount) {
+                // Calculate the amount to deduct from the company account
+                $amountToDeduct = 15; // Fixed amount of 15
+                $remainingAmount = $companyAccount->amount - $amountToDeduct;
 
-            if ($companyAccount->amount >= $amountToDeduct) {
-                // Update the company account
-                $companyAccount->amount -= $amountToDeduct;
-                $companyAccount->save();
+                if ($companyAccount->amount >= $amountToDeduct) {
+                    // Update the company account
+                    $companyAccount->amount -= $amountToDeduct;
+                    $companyAccount->save();
 
-                // Get the admin account
-                $adminAccount = Account::where('user_id', 1)->first(); // Assuming the admin user has ID 1
+                    // Get the admin account
+                    $adminAccount = Account::where('user_id', 1)->first(); // Assuming the admin user has ID 1
 
-                // Add the deducted amount to the admin account
-                $adminAccount->amount += $amountToDeduct;
-                $adminAccount->save();
+                    // Add the deducted amount to the admin account
+                    $adminAccount->amount += $amountToDeduct;
+                    $adminAccount->save();
 
-                $job = Job::create($validatedData);
-                return response()->json([
-                    'job' => $job,
-                    'remaining_company_account_balance' => $remainingAmount
-                ], 201);
-            } else {
-                $job = Job::create($validatedData);
-                return response()->json([
-                    'job' => $job,
-                ], 201);
+                    $job = Job::create($validatedData);
+                    return response()->json([
+                        'job' => $job,
+                        'remaining_company_account_balance' => $remainingAmount
+                    ], 201);
+                }
             }
-        } else {
-            $job = Job::create($validatedData);
-            return response()->json([
-                'job' => $job,
-            ], 201);
         }
+
+        // Create the job regardless of the company account balance
+        $job = Job::create($validatedData);
+        return response()->json([
+            'job' => $job,
+        ], 201);
     } else {
         return response()->json(['error' => 'User not authorized.'], 403);
     }
 }
-
 public function jobsByCompany($company_id)
 {
     $jobs = Job::where('company_id', $company_id)->get();
@@ -192,4 +189,101 @@ public function getJobsByUserId($userId)
     $jobs = Job::where('user_id', $userId)->get();
     return response()->json(['jobs' => $jobs]);
 }
+public function getJobsByFilters($company_id, $category_id)
+{
+    $query = Job::query();
+
+    if ($company_id) {
+        $query->where('company_id', $company_id);
+    }
+
+    if ($category_id) {
+        $query->where('category_id', $category_id);
+    }
+
+    $jobs = $query->get();
+
+    return response()->json(['jobs' => $jobs]);
+}
+public function getJobsByAdminCategory($user_id, $category_id)
+{
+    $query = Job::query();
+    if ($user_id) {
+        $query->where('user_id', $user_id);
+    }
+    if ($category_id) {
+        $query->where('category_id', $category_id);
+    }
+    $jobs = $query->get();
+    return response()->json(['jobs' => $jobs]);
+}
+public function searchJobByCompanyId(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'title' => 'required',
+        'company_id' => 'required|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Search fields are required',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $query = Job::where('title', 'like', '%' . $request->title . '%');
+
+    if ($request->has('company_id')) {
+        $query->where('company_id', $request->company_id);
+    }
+
+    $jobs = $query->get();
+
+    if ($jobs->isNotEmpty()) {
+        return response()->json([
+            'data' => $jobs,
+            'message' => 'Found jobs',
+        ], 200);
+    } else {
+        return response()->json([
+            'data' => [],
+            'message' => 'No jobs matched your search',
+        ], 404);
+    }
+}
+public function searchJobByAdminId(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'title' => 'required',
+        'user_id' => 'required|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Search fields are required',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $query = Job::where('title', 'like', '%' . $request->title . '%');
+
+    if ($request->has('user_id')) {
+        $query->where('user_id', $request->user_id);
+    }
+
+    $jobs = $query->get();
+
+    if ($jobs->isNotEmpty()) {
+        return response()->json([
+            'data' => $jobs,
+            'message' => 'Found jobs',
+        ], 200);
+    } else {
+        return response()->json([
+            'data' => [],
+            'message' => 'No jobs matched your search',
+        ], 404);
+    }
+}
+
 }

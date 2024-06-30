@@ -103,6 +103,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/job/delete/{id}', [JobController::class,'destroy']);
     Route::get('/jobs/company/{id}', [JobController::class,'jobsByCompany']);
     Route::get('/jobs/admin/{id}', [JobController::class,'getJobsByUserId']);
+    Route::get('/jobs/company/category/{company_id}/{category_id}', [JobController::class,'getJobsByFilters']);
+    Route::get('/jobs/admin/category/{admin}/{category_id}', [JobController::class,'getJobsByAdminCategory']);
+    Route::post('/job/SearchByCompanyId', [JobController::class,'searchJobByCompanyId']);
+    Route::post('/job/SearchByAdminId', [JobController::class,'searchJobByAdminId']);
 
 });
 
@@ -120,7 +124,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/job/freelancers/create', [JobsForFreelancersController::class,'create']);
     Route::post('/job/freelancers/update/{id}', [JobsForFreelancersController::class,'update']);
     Route::post('/job/freelancers/delete/{id}', [JobsForFreelancersController::class,'destroy']);
-
+    Route::get('/job/freelancersByJobOwner/{id}',[ JobsForFreelancersController::class, 'getJobsByJobOwnerId']);
+    Route::get('/job/JobsFreelanceByJobOwnerAndCategroyId/{user_id}/{category_id}',[ JobsForFreelancersController::class, 'getJobsFreelanceByJobOwnerAndCategroyId']);
+    Route::post('/job/searchJobFreelanceByOwnerId', [JobsForFreelancersController::class,'searchJobByOwnerId']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

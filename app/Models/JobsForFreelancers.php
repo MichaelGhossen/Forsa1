@@ -17,8 +17,8 @@ class JObsForFreelancers extends Model
         'languages',
         'description',
         'requirements',
+        'user_id',
         'category_id',
-
     ];
 
 

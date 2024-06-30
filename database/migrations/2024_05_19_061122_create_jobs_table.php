@@ -27,9 +27,9 @@ return new class extends Migration
             $table->decimal('max_salary', 10, 2)->nullable();
             $table->string('location')->nullable();
             $table->unsignedBigInteger('company_id')->nullable();
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('set null');
+            $table->foreign('company_id')->references('id')->on('companies');
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });
     }
