@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\JobOwner;
 use App\Models\JobsForFreelancers;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -125,8 +126,7 @@ class JobsForFreelancersController extends Controller
     }
 }
 
-
-    public function create(Request $request)
+public function create(Request $request)
 {
     $user = Auth::user();
 
@@ -147,7 +147,6 @@ class JobsForFreelancersController extends Controller
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'user_id' => 'required|exists:users,id',
-
         ]);
 
         // Get the job owner's account
@@ -156,7 +155,7 @@ class JobsForFreelancersController extends Controller
         // Calculate the amount to deduct from the job owner's account
         $amountToDeduct = 15; // For example, deduct $50 for creating a job
 
-        // Check if the job ow ner has enough balance
+        // Check if the job owner has enough balance
         if ($jobOwnerAccount->amount >= $amountToDeduct) {
             // Update the job owner's account
             $jobOwnerAccount->amount -= $amountToDeduct;
@@ -170,7 +169,7 @@ class JobsForFreelancersController extends Controller
                 'languages' => $validatedData['languages'],
                 'description' => $validatedData['description'],
                 'category_id' => $validatedData['category_id'],
-                'user_id'=>$validatedData['user_id'],
+                'user_id' => $validatedData['user_id'],
             ]);
 
             // Attach the selected skills to the job
@@ -179,9 +178,13 @@ class JobsForFreelancersController extends Controller
             // Retrieve the job details
             $jobDetails = JobsForFreelancers::with('skills')->find($job->id);
 
+            $jobOwner = JobOwner::where('user_id', $user->id)->first();
+            $jobOwnerId = $jobOwner->id;
+
             return response()->json([
                 'job' => $jobDetails,
-                'remaining_job_owner_account_balance' => $jobOwnerAccount->amount
+                'remaining_job_owner_account_balance' => $jobOwnerAccount->amount,
+                'job_owner_id' => $jobOwnerId,
             ], 201);
         } else {
             return response()->json(['error' => 'Insufficient balance.'], 400);

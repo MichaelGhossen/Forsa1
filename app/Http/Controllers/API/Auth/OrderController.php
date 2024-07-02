@@ -23,9 +23,7 @@ class OrderController extends Controller
             $orders = Order::all();
             return response()->json($orders);
         } else {
-            // Fetch the user's own orders
-            $orders = $user->orders;
-            return response()->json($orders);
+            return response()->json(['error' => 'You are not authorized to delete this job.'], 403);
         }
     }
     public function store(Request $request)
