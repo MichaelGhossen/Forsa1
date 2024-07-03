@@ -135,10 +135,33 @@ public function createOrder(Request $request)
                                   ->whereHas('user', function ($query) use ($userId) {
                                       $query->where('id', $userId);
                                   })
-                                  ->get();
+                                  ->get([
+                                      'id',
+                                      'j_obs_for_freelancers_id',
+                                      'user_id',
+                                      'cv_id',
+                                      'job_owner_id',
+                                      'order_status',
+                                      'created_at',
+                                      'updated_at',
+                                  ]);
+
+        // Map the orders to the desired format
+        $orderData = $orders->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'j_obs_for_freelancers_id' => $order->j_obs_for_freelancers_id,
+                'user_id' => $order->user_id,
+                'cv_id' => $order->cv_id,
+                'job_owner_id' => $order->job_owner_id,
+                'order_status' => $order->order_status,
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at
+            ];
+        });
 
         // Return the orders as a JSON response
-        return response()->json($orders, 200);
+        return response()->json($orderData, 200);
     }
 
     public function getOrdersByJobOwnerAndJobForFreelanceId($job_owner_id, $j_obs_for_freelancers_id)
