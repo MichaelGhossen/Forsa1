@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderForFreelance;
 use App\Models\User;
 use App\Models\UserSkill;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -25,9 +26,7 @@ class OrderForFreelanceController extends Controller
             $orders = OrderForFreelance::all();
             return response()->json($orders);
         } else {
-            // Fetch the user's own orders
-            $orders = $user->orders;
-            return response()->json($orders);
+            return response()->json(['error' => 'You are not authorized to delete this job.'], 403);
         }
     }
     public function show($id){
@@ -41,9 +40,11 @@ class OrderForFreelanceController extends Controller
     $order->delete();
     return response()->json(['message' => 'Order deleted']);
 }
-public function getOrdersByJobOwnerId($UserId)
+public function getOrdersByJobOwnerId($jobOwnerId)
 {
-    $orders = OrderForFreelance::where('user_id', $UserId)->get();
+    try {
+      $jobOwner = JobOwner::findOrFail($jobOwnerId);
+    $orders = OrderForFreelance::where('job_owner_id', $jobOwnerId)->get();
 
     // Initialize an empty array to hold the orders
     $arr = [];
@@ -56,8 +57,11 @@ public function getOrdersByJobOwnerId($UserId)
 
     // Return the array of orders wrapped in a JSON response
     return response()->json(['message' => $arr], 200);
+} catch (ModelNotFoundException $e) {
+        // Handle the case when the job owner is not found
+        return response()->json(['error' => 'Job owner not found'], 404);
+    }
 }
-
 public function createOrder(Request $request)
 {
     // Validate the input data
@@ -156,7 +160,8 @@ public function createOrder(Request $request)
                 'job_owner_id' => $order->job_owner_id,
                 'order_status' => $order->order_status,
                 'created_at' => $order->created_at,
-                'updated_at' => $order->updated_at
+                'updated_at' => $order->updated_at,
+
             ];
         });
 
