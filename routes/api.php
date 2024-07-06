@@ -200,4 +200,7 @@ Route::middleware('auth:sanctum')->get('/job_owners_for_admin', [UserController:
 Route::middleware('auth:sanctum')->get('/job_seekers_for_admin', [UserController::class, 'getAllJobSeekers']);
 Route::get('/get/picture/{id}', [RegisterController::class,'getFile']);
 Route::get('/get/cv/{id}', [CvController::class,'getCv']);
+Route::get('/get/cvByUser_id/{id}', [CvController::class,'getCvIdByUserId']);
+
+
 Route::post('/jobOwner/user_id/{id}', [UserController::class,'getJobOwnerIdByUserId']);

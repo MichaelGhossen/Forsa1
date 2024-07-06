@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\CV;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
@@ -144,6 +145,22 @@ class CvController extends Controller
             return response()->json([
                 "data" => $e->getMessage()
             ]);
+        }
+    }
+    public function getCvIdByUserId($userId)
+    {
+        try {
+            // Retrieve the CV by user_id
+            $cv = CV::where('user_id', $userId)
+                 ->firstOrFail([
+                     'id',
+                 ]);
+
+            // Return the cv_id as a JSON response
+            return response()->json(['cv_id' => $cv->id], 200);
+        } catch (ModelNotFoundException $e) {
+            // Handle the case when the CV is not found
+            return response()->json(['error' => 'CV not found'], 404);
         }
     }
 }
