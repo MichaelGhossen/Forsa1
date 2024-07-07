@@ -55,12 +55,31 @@ class FavoriteFreelanceController extends Controller
     }
     public function getAllFavorites(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-        $favoriteJobs = $user->freelance_favorites()
-                             ->get();
-        return response()->json($favoriteJobs);
-    }
+        // Retrieve the user using the $id
+        $user = Auth::id();
 
+        $favorites = DB::table('j_obs_for_freelancers')
+        ->join('freelance_favorites', 'j_obs_for_freelancers.id', '=', 'freelance_favorites.j_obs_for_freelancers_id')
+        ->where('freelance_favorites.user_id', $user)
+        ->select(
+                "freelance_favorites.id as freelance_favorites_id",
+                "j_obs_for_freelancers.id as j_obs_for_freelancers_id",
+                "j_obs_for_freelancers.title",
+                "j_obs_for_freelancers.category_id"
+        )
+        ->get();
+        if (count($favorites)!=0) {
+            return response()->json([
+                'data' => $favorites,
+                'message' => 'Favorite freelance job found'
+            ], 200);
+        } else {
+            return response()->json([
+                'data' => null,
+                'message' => 'No favorite freelance job found with the given ID'
+            ], 404);
+        }
+    }
 public function searchFavoriteForFreelance(Request $request)
 {
     $validator = Validator::make($request->all(), [
@@ -75,8 +94,6 @@ public function searchFavoriteForFreelance(Request $request)
     }
 
     $user = Auth::id();
-    // $freelance_favorites = $user->freelance_favorites()->where('j_obs_for_freelancers_id', $request->j_obs_for_freelancers_id)->first();
-    //j_obs_for_freelancers_id freelance_favorites
     $favorites = DB::table('j_obs_for_freelancers')
         ->join('freelance_favorites', 'j_obs_for_freelancers.id', '=', 'freelance_favorites.j_obs_for_freelancers_id')
             ->where('j_obs_for_freelancers.title', 'like', '%' . $request->title . '%')
@@ -89,8 +106,6 @@ public function searchFavoriteForFreelance(Request $request)
 
 
     if (count($favorites)!=0) {
-        // $job = JObsForFreelancers::find($freelance_favorites->j_obs_for_freelancers_id);
-
         return response()->json([
             'data' => $favorites,
             'message' => 'Favorite freelance job found'

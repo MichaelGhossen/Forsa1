@@ -54,16 +54,43 @@ class FavoriteController extends Controller
     }
 
     public function getAllFavorites(Request $request, $id)
-    {
-        // Retrieve the user using the $id
-        $user = User::findOrFail($id);
+{
+    // Retrieve the user using the $id
+    $user = Auth::id();
 
-        // Load the favorite jobs for the user, including the related job data
-        $favoriteJobs = $user->favorites()
-            ->get();
-        // Return the favorite jobs as a JSON response
-        return response()->json($favoriteJobs);
+    // Fetch the favorite jobs for the user
+    $favorites = DB::table('jobs')
+        ->join('favorites', 'jobs.id', '=', 'favorites.job_id')
+        ->where('favorites.user_id', $user)
+        ->select(
+            'favorites.id as favorite_id',
+            'jobs.id as job_id',
+            'jobs.title',
+            'jobs.category_id'
+        )
+        ->get();
+
+    if ($favorites->isNotEmpty()) {
+        $data = $favorites->map(function ($favorite) {
+            return [
+                'job_id' => $favorite->job_id,
+                'favorite_id' => $favorite->favorite_id,
+                'title' => $favorite->title,
+                'category_id' => $favorite->category_id,
+            ];
+        });
+
+        return response()->json([
+            'data' => $data,
+            'message' => 'Jobs found in favorites',
+        ], 200);
     }
+
+    return response()->json([
+        'data' => [],
+        'message' => 'No jobs found in favorites',
+    ], 200);
+}
     public function searchJobInFavorites(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -87,25 +114,10 @@ class FavoriteController extends Controller
                 "jobs.title",
                 "jobs.category_id"
             ]);
-        // $user->favorites()
-        //     ->whereHas('job', function ($query) use ($request) {
-        //         $query->where('title', 'like', '%' . $request->title . '%');
-        //     })
-        //     ->with('job')
-        //     ->get();
-
         if ($favorites->isNotEmpty()) {
             $data = $favorites->map(
-                function ($favorite) {
-                    // return [
-                    //     'id' => $favorite->id,
-                    //     'job_id' => $favorite->job_id,
-                    //     'title' => $favorite->job->title,
-                    // ];
-                }
-            );
+                function ($favorite) {});
             return response()->json([
-
                 'data' => $favorites
             ]);
 
