@@ -194,10 +194,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/freelance/order/show/{id}', [OrderForFreelanceController::class,'show']);
     Route::get('/freelance/order/user_id/{id}', [OrderForFreelanceController::class,'getAllOrdersForUser']);
     Route::get('/freelance/orders/job_owner_id/jobForFreelance_id/{job_owner_id}/{j_obs_for_freelancers_id}', [OrderForFreelanceController::class,'getOrdersByJobOwnerAndJobForFreelanceId']);
-    Route::get('/orders/status/{status?}', [OrderForFreelanceController::class, 'getOrdersByStatus']);
+    Route::get('freelance/orders/status/{status?}', [OrderForFreelanceController::class, 'getOrdersByStatus']);
 
 });
-Route::post('email/verify/send',[VerificationController::class,'sendMail']);
 
 Route::middleware('auth:sanctum')->get('/job_owners_for_admin', [UserController::class, 'getAllJobOwners']);
 Route::middleware('auth:sanctum')->get('/job_seekers_for_admin', [UserController::class, 'getAllJobSeekers']);

@@ -152,5 +152,62 @@ public function getOrdersByCompanyId($companyId)
         return response()->json(['orders' => $orders], 200);
     }
 
+//     public function getOrdersByStatusNOtification(Request $request, $status = null)
+// {
+//     $orders = Order::whereIn('order_status', ['accepted', 'rejected', 'processing'])
+//                ->when($status, function ($query) use ($status) {
+//                    $query->where('order_status', $status);
+//                })
+//                ->get();
+
+//     $ordersWithStatus = $orders->map(function ($order) use ($request) {
+//         return [
+//             'id' => $order->id,
+//             'order_status' => $order->order_status,
+//             'other_order_details' => $order->toArray()
+//         ];
+//     });
+
+//     // Trigger the notification for each order
+//     foreach ($ordersWithStatus as $order) {
+//         $this->sendOrderStatusNotification($order['id'], $order['order_status'], $request->input('device_token'), $request->input('server_api_key'));
+//     }
+
+//     return response()->json(['orders' => $ordersWithStatus], 200);
+// }
+//     protected function sendOrderStatusNotification($orderId, $orderStatus, $deviceToken, $serverApiKey)
+//     {
+//         $data = [
+//             "registration_ids" => [
+//                 $deviceToken
+//             ],
+//             "notification" => [
+//                 "title" => "Order Status Update",
+//                 "body" => "Your order #$orderId has been changed to '$orderStatus'."
+//             ]
+//         ];
+
+//         $dataString = json_encode($data);
+
+//         $headers = [
+//             'Authorization: key=' . $serverApiKey,
+//             'Content-Type: application/json'
+//         ];
+
+//         $ch = curl_init();
+
+//         curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+//         curl_setopt($ch, CURLOPT_POST, true);
+//         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+//         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+//         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+//         $response = curl_exec($ch);
+//         curl_close($ch);
+
+//         return $response;
+//     }
+
 }
 
