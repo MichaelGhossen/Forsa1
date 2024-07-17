@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\Auth;
 
+use App\Events\NewNotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Companies;
 use App\Models\CV;
@@ -40,9 +41,9 @@ class OrderController extends Controller
 
         // Check if the user has already applied for the job
         $existingOrder = Order::where('user_id', $request->user_id)
-                            ->where('job_id', $job->id)
-                            ->where('company_id', $company->id)
-                            ->first();
+            ->where('job_id', $job->id)
+            ->where('company_id', $company->id)
+            ->first();
         if ($existingOrder) {
             return response()->json(['message' => 'You have already applied for this job.'], 400);
         }
@@ -63,7 +64,7 @@ class OrderController extends Controller
             // Return the order and CV ID in the response
             return response()->json([
                 'order' => $order,
-              //  'cv_id' => $cv_id
+                //  'cv_id' => $cv_id
             ], 201);
         } else {
             // Return a message if the user doesn't have a CV
@@ -75,40 +76,50 @@ class OrderController extends Controller
 
     public function update(Request $request, $id)
     {
+        $user=Auth::user();
+        if($user['user_type']!='company'){
+            return response()->json(null,403);
+        }
         $order = Order::findOrFail($id);
+        if($user['id']!=$order->company_id){
+            return response()->json(null,403);
+        }
         $validatedData = $request->validate([
             'order_status' => 'required|in:processing,rejected,accepted',
         ]);
         $order->order_status = $request->order_status;
         $order->save();
+        $userId =$order->user_id;
+        $notification = ['message' => 'the order status is '.$order->order_status];
+        event(new NewNotificationEvent($userId, $notification));
         return response()->json($order);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $order = Order::findOrFail($id);
         return response()->json($order);
-
     }
 
-/**
- * Remove the specified resource from storage.
- */
-public function destroy($id)
-{
-    $order = Order::findOrFail($id);
-    $order->delete();
-    return response()->json(['message' => 'Order deleted']);
-}
-public function getOrdersByCompanyId($companyId)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        $order = Order::findOrFail($id);
+        $order->delete();
+        return response()->json(['message' => 'Order deleted']);
+    }
+    public function getOrdersByCompanyId($companyId)
     {
 
         $orders = Order::where('company_id', $companyId)->get();
-        $arr[]=null;
-        $i=0;
-        foreach($orders as $orders)
-     {  $arr[$i++]=$orders;
-}
-        return response()->json(['message'=>$arr],200);
+        $arr[] = null;
+        $i = 0;
+        foreach ($orders as $orders) {
+            $arr[$i++] = $orders;
+        }
+        return response()->json(['message' => $arr], 200);
     }
     public function getAllOrders(Request $request, $id)
     {
@@ -123,8 +134,8 @@ public function getOrdersByCompanyId($companyId)
     public function getOrdersByCompanyAndJobId($companyId, $jobId)
     {
         $orders = Order::where('company_id', $companyId)
-                       ->where('job_id', $jobId)
-                       ->get();
+            ->where('job_id', $jobId)
+            ->get();
 
         $orderData = [];
 
@@ -144,70 +155,11 @@ public function getOrdersByCompanyId($companyId)
     public function getOrdersByStatus($status)
     {
         $orders = Order::whereIn('order_status', ['accepted', 'rejected', 'processing'])
-                       ->when($status, function ($query) use ($status) {
-                           $query->where('order_status', $status);
-                       })
-                       ->get();
+            ->when($status, function ($query) use ($status) {
+                $query->where('order_status', $status);
+            })
+            ->get();
 
         return response()->json(['orders' => $orders], 200);
     }
-
-//     public function getOrdersByStatusNOtification(Request $request, $status = null)
-// {
-//     $orders = Order::whereIn('order_status', ['accepted', 'rejected', 'processing'])
-//                ->when($status, function ($query) use ($status) {
-//                    $query->where('order_status', $status);
-//                })
-//                ->get();
-
-//     $ordersWithStatus = $orders->map(function ($order) use ($request) {
-//         return [
-//             'id' => $order->id,
-//             'order_status' => $order->order_status,
-//             'other_order_details' => $order->toArray()
-//         ];
-//     });
-
-//     // Trigger the notification for each order
-//     foreach ($ordersWithStatus as $order) {
-//         $this->sendOrderStatusNotification($order['id'], $order['order_status'], $request->input('device_token'), $request->input('server_api_key'));
-//     }
-
-//     return response()->json(['orders' => $ordersWithStatus], 200);
-// }
-//     protected function sendOrderStatusNotification($orderId, $orderStatus, $deviceToken, $serverApiKey)
-//     {
-//         $data = [
-//             "registration_ids" => [
-//                 $deviceToken
-//             ],
-//             "notification" => [
-//                 "title" => "Order Status Update",
-//                 "body" => "Your order #$orderId has been changed to '$orderStatus'."
-//             ]
-//         ];
-
-//         $dataString = json_encode($data);
-
-//         $headers = [
-//             'Authorization: key=' . $serverApiKey,
-//             'Content-Type: application/json'
-//         ];
-
-//         $ch = curl_init();
-
-//         curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-//         curl_setopt($ch, CURLOPT_POST, true);
-//         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-//         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-//         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-
-//         $response = curl_exec($ch);
-//         curl_close($ch);
-
-//         return $response;
-//     }
-
 }
-

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\Auth;
 
+use App\Events\NewNotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\CV;
 use App\Models\JobOwner;
@@ -124,12 +125,22 @@ public function createOrder(Request $request)
 }
     public function update(Request $request, $id)
     {
+        $user=Auth::user();
+        if($user['user_type']!='job_owner'){
+            return response()->json(null,403);
+        }
         $order = OrderForFreelance::findOrFail($id);
         $validatedData = $request->validate([
             'order_status' => 'required|in:processing,rejected,accepted',
         ]);
+        if($user['id']!=$order->job_owner_id){
+            return response()->json(null,403);
+        }
         $order->order_status = $request->order_status;
         $order->save();
+        $userId =$order->user_id;
+        $notification = ['message' => 'the order status is '.$order->order_status];
+        event(new NewNotificationEvent($userId, $notification));
         return response()->json($order);
     }
     public function getAllOrdersForUser(Request $request, $userId)
