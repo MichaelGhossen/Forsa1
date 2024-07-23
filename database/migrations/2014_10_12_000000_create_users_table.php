@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('fileType')->nullable();
             $table->integer('flag')->default(0);
             $table->enum('user_type', ['job_owner','job_seeker', 'freelancer', 'company', 'admin']);
+            $table->string('answer');
             $table->rememberToken();
             $table->timestamps();
         });

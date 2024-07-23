@@ -206,3 +206,9 @@ Route::get('/get/cvByUser_id/{id}', [CvController::class,'getCvIdByUserId']);
 
 
 Route::post('/jobOwner/user_id/{id}', [UserController::class,'getJobOwnerIdByUserId']);
+
+Route::post('/verify/answer/user', [RegisterController::class,'verifyUserAnswer']);
+Route::post('/verify/answer/company', [RegisterController::class,'verifyCompanyAnswer']);
+
+Route::post('/changePassword/user', [RegisterController::class,'resetPasswordUser']);
+Route::post('/changePassword/company', [RegisterController::class,'resetPasswordCompany']);

@@ -17,7 +17,7 @@ class Companies extends Model
         'commercial_register',
         'flag',
         'user_type',
-
+        'answer',
     ];
     protected $hidden = [
         'password',

@@ -25,6 +25,7 @@ class RegisterController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6',
             'image' => 'nullable|mimes:png,jpg,jpeg,gif',
+            'answer'=> 'required|string|max:255',
         ]);
 
         // Check if the user already has an account
@@ -49,8 +50,8 @@ class RegisterController extends Controller
             'image' => $imagePath, //$request->hasFile('image') ? $request->file('image')->store('profile_images', 'public') : null,
             'fileType' => $type,
             'user_type' => 'job_seeker',
+            'answer' => $validatedData['answer'],
         ]);
-
         $jobSeeker = JobSeeker::create([
             'user_id' => $user->id,
         ]);
@@ -66,6 +67,8 @@ class RegisterController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6',
             'image' => 'nullable|mimes:png,jpg,jpeg,gif',
+            'answer'=> 'required|string|max:255',
+
         ]);
         $imagePath = null;
         $type = null;
@@ -83,6 +86,8 @@ class RegisterController extends Controller
             'image' => $imagePath, //$request->hasFile('image') ? $request->file('image')->store('profile_images', 'public') : null,
             'fileType' => $type,
             'user_type' => 'job_owner',
+            'answer' => $validatedData['answer'],
+
         ]);
 
         $jobOwner = JobOwner::create([
@@ -103,6 +108,7 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8',
             'commercial_register' => 'required|string|max:255',
             'user_type' => 'required|string|in:company,admin', // Validate the user_type
+            'answer'=> 'required|string|max:255',
         ]);
 
         $company = Companies::create([
@@ -111,6 +117,7 @@ class RegisterController extends Controller
             'password' => Hash::make($validatedData['password']),
             'commercial_register' => $validatedData['commercial_register'],
             'user_type' => $validatedData['user_type'], // Set the user_type
+            'answer' => $validatedData['answer'],
         ]);
 
         return response()->json(['message' => 'Company registered successfully'], 201);
@@ -133,4 +140,101 @@ class RegisterController extends Controller
             ]);
         }
     }
+    public function verifyUserAnswer(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'answer' => 'required|string',
+    ]);
+
+    $user = User::where('email', $request->input('email'))->first();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found.'
+        ], 404);
+    }
+
+    if ($user->answer === $request->input('answer')) {
+        return response()->json([
+            'message' => 'Answer verified successfully.'
+        ], 200);
+    } else {
+        return response()->json([
+            'message' => 'Invalid answer.'
+        ], 400);
+    }
+}
+public function verifyCompanyAnswer(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'answer' => 'required|string',
+    ]);
+
+    $user = Companies::where('email', $request->input('email'))->first();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found.'
+        ], 404);
+    }
+
+    if ($user->answer === $request->input('answer')) {
+        return response()->json([
+            'message' => 'Answer verified successfully.'
+        ], 200);
+    } else {
+        return response()->json([
+            'message' => 'Invalid answer.'
+        ], 400);
+    }
+}
+public function resetPasswordUser(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|string|min:8',
+    ]);
+    $user = User::where('email', $request->input('email'))->first();
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found.'
+        ], 404);
+    }
+
+    // Update the password
+    $user->password = Hash::make($request->input('password'));
+    $user->save();
+
+    return response()->json([
+        'message' => 'Password reset successfully.'
+    ], 200);
+}
+public function resetPasswordCompany(Request $request)
+{
+    // Validate the input
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|string|min:8',
+    ]);
+
+    // Get the user based on the provided email
+    $user = Companies::where('email', $request->input('email'))->first();
+
+    // Check if the user exists
+    if (!$user) {
+        return response()->json([
+            'message' => 'company not found.'
+        ], 404);
+    }
+
+    // Update the password
+    $user->password = Hash::make($request->input('password'));
+    $user->save();
+
+    return response()->json([
+        'message' => 'Password reset successfully.'
+    ], 200);
+}
 }

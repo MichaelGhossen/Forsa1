@@ -21,8 +21,8 @@ class AdminSeeder extends Seeder
             'password' => Hash::make('12345678'),
             'image'=>null,
             'fileType'=>null,
-            //'cv'=>'NULL',
-            'user_type' => 'admin'
+            'user_type' => 'admin',
+            'answer'=>'10/3/2001',
         ]);
     }
 }

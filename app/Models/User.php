@@ -25,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'fileType',
         'user_type',
         'flag',
+        'answer',
 
     ];
 
