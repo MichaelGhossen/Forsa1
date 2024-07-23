@@ -79,8 +79,6 @@ class CategoryController extends Controller
             return response()->json(['error' => 'You are not authorized to update a category.'], 403);
         }
     }
-
-
     public function destroy($id)
     {
         $user = Auth::user();

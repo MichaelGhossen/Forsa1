@@ -86,16 +86,12 @@ class CvController extends Controller
         $request->validate([
             'cv' => 'required|mimes:pdf',
         ]);
-
-
         $file_path = null;
         if ($request['cv'] != null) {
             $file = $request->file('cv');
             $file_path = 'cvs/' . time() . $file->getClientOriginalName();
             Storage::disk('public')->put($file_path, File::get($file));
         }
-        // $file_path = $request->file('cv')->store('cvs');
-
         $cv = CV::findOrFail($id);
         $cv->update([
             'file_path' => $file_path,
