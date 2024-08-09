@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API\Auth;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Companies;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -117,6 +119,50 @@ class AccountController extends Controller
         return response()->json(['Account deleted successfully']);
         }else{
         return response()->json(['error' => 'You are not authorized.'], 403);
+    }
+}
+public function getAccountAmountForUser($userId)
+{
+    $user = User::findOrFail($userId);
+    $account = $user->account;
+    if ($account) {
+        return response()->json([
+            'account_amount' => $account->amount
+        ]);
+    } else {
+        // Return an error message if the user doesn't have an account
+        return response()->json([
+            'error' => 'User does not have an account'
+        ], 404);
+    }
+}
+
+// public function getAccountAmountForCompany($companyId)
+// {
+//     $company = Companies::findOrFail($companyId);
+//     $account = $company->account;
+//     if ($account) {
+//         return response()->json([
+//             'account_amount' => $account->amount
+//         ]);
+//     } else {
+//         return response()->json([
+//             'error' => 'Company does not have an account'
+//         ], 404);
+//     }
+// }
+public function getAccountAmountForCompany($companyId)
+{
+    $companyAccount = Account::where('company_id', $companyId)->first();
+
+    if ($companyAccount) {
+        return response()->json([
+            'account_amount' => $companyAccount->amount
+        ]);
+    } else {
+        return response()->json([
+            'error' => 'Company does not have an account'
+        ], 404);
     }
 }
 }

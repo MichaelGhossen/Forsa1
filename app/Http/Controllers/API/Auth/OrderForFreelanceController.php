@@ -133,9 +133,6 @@ public function createOrder(Request $request)
         $validatedData = $request->validate([
             'order_status' => 'required|in:processing,rejected,accepted',
         ]);
-        if($user['id']!=$order->job_owner_id){
-            return response()->json(null,403);
-        }
         $order->order_status = $request->order_status;
         $order->save();
         $userId =$order->user_id;

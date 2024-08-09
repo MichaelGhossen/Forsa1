@@ -183,6 +183,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/account/update/{id}', [AccountController::class,'update']);
     Route::post('/account/delete/{id}', [AccountController::class,'destroy']);
 });
+Route::get('/account/user/{userId}', [AccountController::class,'getAccountAmountForUser']);
+Route::get('/account/company/{companyId}', [AccountController::class,'getAccountAmountForCompany']);
+
+
 Route::get('/jobs/category/{category_id}', [CategoryController::class,'getAllJobsByCategory_id']);
 
 Route::middleware('auth:sanctum')->group(function () {
