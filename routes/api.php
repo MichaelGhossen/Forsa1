@@ -9,18 +9,18 @@ use App\Http\Controllers\API\Auth\FavoriteFreelanceController;
 use App\Http\Controllers\API\Auth\JobController;
 use App\Http\Controllers\API\Auth\JobsForFreelancersController;
 use App\Http\Controllers\API\Auth\LoginController;
-    use App\Http\Controllers\API\Auth\LogoutController;
+use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\OrderController;
 use App\Http\Controllers\API\Auth\OrderForFreelanceController;
 use App\Http\Controllers\API\Auth\ShowController;
 use App\Http\Controllers\API\Auth\SkillController;
 use App\Http\Controllers\API\Auth\UpdateController;
 use App\Http\Controllers\API\RegisterController;
-    use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\VerificationController;
 use App\Models\OrderForFreelance;
 use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route;
 
     /*
     |--------------------------------------------------------------------------
