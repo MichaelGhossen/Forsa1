@@ -250,4 +250,14 @@ public function searchJobByOwnerId(Request $request)
         ], 404);
     }
 }
+public function getJobForFreelanceName($jobId)
+{
+    // Retrieve the job record
+    $job = JobsForFreelancers::findOrFail($jobId);
+
+    // Return the job name as a JSON response
+    return response()->json([
+        'title' => $job->title
+    ]);
+}
 }

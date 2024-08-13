@@ -288,5 +288,14 @@ public function searchJobByAdminId(Request $request)
         ], 404);
     }
 }
+public function getJobName($jobId)
+{
+    // Retrieve the job record
+    $job = Job::findOrFail($jobId);
 
+    // Return the job name as a JSON response
+    return response()->json([
+        'title' => $job->title
+    ]);
+}
 }

@@ -213,6 +213,8 @@ Route::post('/jobOwner/user_id/{id}', [UserController::class,'getJobOwnerIdByUse
 Route::get('/users/name/{userId}', [UserController::class,'getUserName']);
 Route::get('/company/name/{companyId}', [UserController::class,'getCompanyName']);
 Route::get('/jobowner/name/{jobOwnerId}', [UserController::class,'getJobOwnerUserName']);
+Route::get('/job/title/{jobId}', [JobController::class,'getJobName']);
+Route::get('/jobForFreelance/title/{jobId}', [JobsForFreelancersController::class,'getJobForFreelanceName']);
 
 Route::post('/verify/answer/user', [RegisterController::class,'verifyUserAnswer']);
 Route::post('/verify/answer/company', [RegisterController::class,'verifyCompanyAnswer']);
