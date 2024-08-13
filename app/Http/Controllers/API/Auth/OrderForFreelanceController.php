@@ -197,9 +197,10 @@ public function createOrder(Request $request)
 
     return response()->json(['orders' => $orderData], 200);
 }
-public function getOrdersByStatus($status)
+public function getOrdersByStatusAndUser($status, $userId)
 {
     $orders = OrderForFreelance::whereIn('order_status', ['accepted', 'rejected', 'processing'])
+                   ->where('user_id', $userId)
                    ->when($status, function ($query) use ($status) {
                        $query->where('order_status', $status);
                    })

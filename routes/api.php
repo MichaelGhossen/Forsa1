@@ -173,7 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/order/show/{id}', [OrderController::class,'show']);
     Route::get('/order/user_id/{id}', [OrderController::class,'getAllOrders']);
     Route::get('/order/company_id/job_id/{company_id}/{job_id}', [OrderController::class,'getOrdersByCompanyAndJobId']);
-    Route::get('/orders/status/{status?}', [OrderController::class, 'getOrdersByStatus']);
+    Route::get('/orders/{status}/{userId}', [OrderController::class, 'getOrdersByStatusAndUser']);
 
 });
 Route::middleware('auth:sanctum')->group(function () {
@@ -198,7 +198,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/freelance/order/show/{id}', [OrderForFreelanceController::class,'show']);
     Route::get('/freelance/order/user_id/{id}', [OrderForFreelanceController::class,'getAllOrdersForUser']);
     Route::get('/freelance/orders/job_owner_id/jobForFreelance_id/{job_owner_id}/{j_obs_for_freelancers_id}', [OrderForFreelanceController::class,'getOrdersByJobOwnerAndJobForFreelanceId']);
-    Route::get('freelance/orders/status/{status?}', [OrderForFreelanceController::class, 'getOrdersByStatus']);
+    Route::get('freelance/orders/{status}/{userId}', [OrderForFreelanceController::class, 'getOrdersByStatusAndUser']);
 
 });
 

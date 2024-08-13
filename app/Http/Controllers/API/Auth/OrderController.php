@@ -151,14 +151,14 @@ class OrderController extends Controller
 
         return response()->json(['orders' => $orderData], 200);
     }
-
-    public function getOrdersByStatus($status)
+    public function getOrdersByStatusAndUser($status, $userId)
     {
         $orders = Order::whereIn('order_status', ['accepted', 'rejected', 'processing'])
-            ->when($status, function ($query) use ($status) {
-                $query->where('order_status', $status);
-            })
-            ->get();
+                    ->where('user_id', $userId)
+                    ->when($status, function ($query) use ($status) {
+                        $query->where('order_status', $status);
+                    })
+                    ->get();
 
         return response()->json(['orders' => $orders], 200);
     }
