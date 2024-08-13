@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
@@ -172,5 +173,39 @@ public function getCompanyName($companyId)
     return response()->json([
         'name' => $company->name
     ]);
+}
+public function getJobOwnerUserName($jobOwnerId)
+{
+    // Retrieve the job owner record
+    $jobOwner = DB::table('job_owners')
+                    ->where('id', $jobOwnerId)
+                    ->first();
+
+    // Check if the job owner record exists
+    if ($jobOwner) {
+        // Retrieve the user record associated with the job owner
+        $user = DB::table('users')
+                    ->where('id', $jobOwner->user_id)
+                    ->first();
+
+        // Check if the user record exists
+        if ($user) {
+            // Return the user's first and last name as a JSON response
+            return response()->json([
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name
+            ]);
+        } else {
+            // Return an error message if the user record is not found
+            return response()->json([
+                'error' => 'User not found'
+            ], 404);
+        }
+    } else {
+        // Return an error message if the job owner record is not found
+        return response()->json([
+            'error' => 'Job owner not found'
+        ], 404);
+    }
 }
 }
