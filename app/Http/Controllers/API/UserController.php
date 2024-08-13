@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Companies;
 use App\Models\JobOwner;
 use App\Models\Skill;
 use App\Models\User;
@@ -154,5 +155,22 @@ public function getJobOwnerIdByUserId($user_id)
 {
     $jobOwner = JobOwner::where('user_id', $user_id)->first();
     return response()->json($jobOwner);
+}
+
+public function getUserName($userId)
+{
+    $user = User::findOrFail($userId);
+    return response()->json([
+        'first_name' => $user->first_name,
+        'last_name' => $user->last_name
+
+    ]);
+}
+public function getCompanyName($companyId)
+{
+    $company = Companies::findOrFail($companyId);
+    return response()->json([
+        'name' => $company->name
+    ]);
 }
 }
