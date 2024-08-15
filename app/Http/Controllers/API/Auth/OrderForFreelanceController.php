@@ -135,9 +135,9 @@ public function createOrder(Request $request)
         ]);
         $order->order_status = $request->order_status;
         $order->save();
-        $userId =$order->user_id;
-        $notification = ['message' => 'the order status is '.$order->order_status];
-        event(new NewNotificationEvent($userId, $notification));
+        // $userId =$order->user_id;
+        // $notification = ['message' => 'the order status is '.$order->order_status];
+        // event(new NewNotificationEvent($userId, $notification));
         return response()->json($order);
     }
     public function getAllOrdersForUser(Request $request, $userId)
